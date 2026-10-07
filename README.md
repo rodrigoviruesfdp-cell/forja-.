@@ -178,7 +178,7 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
 
 ### Entrega 1.2: biblioteca de ejercicios y base de la Comunidad
 
-1. **Actualizar la app.** Esta vez, cierra la app del todo (deslízala fuera de las apps abiertas) y vuelve a abrirla. Si sigues viendo la versión anterior, repítelo una vez más.
+1. **Actualizar la app.** Abre la app con conexión y espera unos segundos: se recargará sola una vez y ya tendrás la 1.2. Si no pasa en un minuto, ciérrala del todo y vuelve a abrirla.
    - A partir de esta versión, cuando haya una nueva verás abajo **"Hay una versión nueva · Actualizar"**.
 2. **Navegación:** abajo verás **Hoy, Calendario, Rutinas, Progreso y Comunidad**. **Perfil** se abre desde el círculo con tu inicial, arriba a la derecha.
 3. **Rutinas → Biblioteca de ejercicios:** tiene que poner 876 ejercicios. La primera vez que se abre tras actualizar, el móvil descarga el catálogo (unos segundos).

@@ -2,6 +2,7 @@
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, RuntimeCaching, SerwistGlobalConfig } from "serwist";
 import { CacheableResponsePlugin, CacheFirst, ExpirationPlugin, Serwist } from "serwist";
+import { UPDATE_UI_MARKER } from "./update-marker";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -19,6 +20,8 @@ declare const self: ServiceWorkerGlobalScope;
  *  - Everything else (Supabase API calls) goes to the network; the app's own
  *    sync engine handles being offline.
  *  - A new version waits until the user taps "Update" (no reloads mid-workout).
+ *    Exception: if the device has never run a version with that button (1.1),
+ *    nobody could tap it, so the new version takes over and reloads the open pages once.
  */
 
 const exerciseImages: RuntimeCaching = {
@@ -45,3 +48,26 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+let reloadOpenPages = false;
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    (async () => {
+      const isUpdate = self.registration.active !== null;
+      if (!isUpdate || (await caches.has(UPDATE_UI_MARKER))) return;
+      reloadOpenPages = true;
+      await self.skipWaiting();
+    })(),
+  );
+});
+
+self.addEventListener("activate", (event) => {
+  if (!reloadOpenPages) return;
+  const claimed = self.clients.claim();
+  event.waitUntil(claimed);
+  // Not part of waitUntil: these navigations are served only once activation has finished.
+  void claimed
+    .then(() => self.clients.matchAll({ type: "window" }))
+    .then((pages) => Promise.all(pages.map((page) => page.navigate(page.url).catch(() => null))));
+});

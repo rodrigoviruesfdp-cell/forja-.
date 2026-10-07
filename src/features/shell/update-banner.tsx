@@ -5,6 +5,7 @@ import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
+import { UPDATE_UI_MARKER } from "@/service-worker/update-marker";
 
 const CHECK_EVERY_MS = 15 * 60 * 1000;
 
@@ -19,6 +20,8 @@ export function UpdateBanner() {
 
   useEffect(() => {
     if (!serwist) return;
+    // Tells the next versions that this device can show the banner, so they wait for the tap.
+    void globalThis.caches?.open(UPDATE_UI_MARKER).catch(() => null);
     const onWaiting = () => setWaiting(true);
     const onControlling = () => window.location.reload();
     serwist.addEventListener("waiting", onWaiting);

@@ -125,7 +125,7 @@ Documento vivo: se actualiza en cada entrega.
   - la barra inferior pasa a ser Hoy, Calendario, Rutinas, Progreso y **Comunidad**;
   - **Perfil** se abre desde el botón con tu inicial en la cabecera;
   - la biblioteca está dentro de Rutinas.
-- **Actualizaciones de la app:** una versión nueva se descarga en segundo plano y **espera**. Un aviso "Hay una versión nueva · Actualizar" deja elegir el momento, para que nunca se recargue a mitad de un entreno. Si no se toca, entra al cerrar la app del todo.
+- **Actualizaciones de la app:** una versión nueva se descarga en segundo plano y **espera**. Un aviso "Hay una versión nueva · Actualizar" deja elegir el momento, para que nunca se recargue a mitad de un entreno. Si no se toca, entra al cerrar la app del todo. Excepción: un móvil que nunca ha tenido ese aviso (venía de la 1.1) no puede mostrarlo, así que la versión nueva entra sola y recarga la app una vez. La app deja una marca (una caché vacía, `forja-update-ui-v1`) cuando ya puede mostrar el aviso.
 - **Índices** para todas las claves foráneas (aviso del revisor de rendimiento de Supabase). Los índices antiguos de una sola columna se mantienen: no estorban y quitarlos requería confirmación manual.
 - **Comunidad:**
   - el diseño completo está en [`docs/SOCIAL.md`](SOCIAL.md);
