@@ -16,6 +16,9 @@ export const SESSION_STATUSES = ["planned", "in_progress", "completed", "skipped
 export const VISIBILITIES = ["private", "followers", "public"] as const;
 export const MECHANICS = ["compound", "isolation"] as const;
 
+/** Same rule as the database: 3-30 lowercase letters, digits, dots or underscores. */
+export const USERNAME_PATTERN = /^[a-z0-9_.]{3,30}$/;
+
 // Lenient UUID check: accepts every id Postgres or crypto.randomUUID() produce.
 const id = z.guid();
 const timestamp = z.string().min(1);
@@ -41,9 +44,22 @@ export const profileSchema = z.object({
   locale: z.enum(LOCALES),
   injury_notes: z.string().max(2000).nullable(),
   active_routine_id: id.nullable(),
+  // Public identity, reserved for the social phase (nothing is shared yet).
+  username: z.string().regex(USERNAME_PATTERN).nullable(),
+  bio: z.string().max(280).nullable(),
+  avatar_url: z.string().nullable(),
+  is_private: z.boolean(),
   ...tracked,
 });
 export type Profile = z.infer<typeof profileSchema>;
+
+/** Columns added after the first release: rows stored on a phone before that may lack them. */
+export const PROFILE_DEFAULTS = {
+  username: null,
+  bio: null,
+  avatar_url: null,
+  is_private: true,
+} satisfies Partial<Profile>;
 
 export const exerciseTranslationSchema = z.object({
   name: z.string().optional(),

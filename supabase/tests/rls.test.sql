@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(31);
 
 -- Fixtures (as postgres, RLS bypassed) -----------------------------------------
 insert into auth.users (id, email, aud, role)
@@ -197,8 +197,37 @@ select lives_ok(
   'Ana can log a sport session the same day'
 );
 
+-- Public identity (usernames) ----------------------------------------------------------
+select lives_ok(
+  $$ update public.profiles set username = 'ana.lifts', bio = 'Hola'
+     where id = '11111111-1111-1111-1111-111111111111' $$,
+  'Ana can reserve a username'
+);
+
+select throws_ok(
+  $$ update public.profiles set username = 'Ana Lifts!'
+     where id = '11111111-1111-1111-1111-111111111111' $$,
+  '23514',
+  null,
+  'usernames are lowercase letters, digits, dots and underscores'
+);
+
+select is(
+  (select is_private from public.profiles where id = '11111111-1111-1111-1111-111111111111'),
+  true,
+  'profiles are private by default'
+);
+
 -- Bob cannot see any of it --------------------------------------------------------------
 set local request.jwt.claims = '{"sub": "22222222-2222-2222-2222-222222222222", "role": "authenticated"}';
+
+select throws_ok(
+  $$ update public.profiles set username = 'ana.lifts'
+     where id = '22222222-2222-2222-2222-222222222222' $$,
+  '23505',
+  null,
+  'usernames are unique'
+);
 
 select is(
   (select count(*)::int from public.sessions) + (select count(*)::int from public.session_sets)

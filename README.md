@@ -6,7 +6,15 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.1 (cimientos).** Incluye el login, el perfil y las preferencias, la sincronización sin conexión, la app instalable y la base de datos completa con seguridad (RLS). Las pantallas de Calendario, Rutinas y Progreso son de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md).
+> **Estado: entrega 1.2.** Ya funcionan:
+> - el login, el perfil y las preferencias;
+> - la sincronización sin conexión y la app instalable;
+> - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
+> - la base de la futura **Comunidad**.
+>
+> Calendario y Progreso son de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md).
+>
+> **Tu instalación ya está hecha:** proyecto Supabase `forja`, proyecto Vercel `forja` y app en <https://forja-gilt-six.vercel.app>. Los pasos 2 a 7 sirven solo si alguna vez hay que montarlo desde cero.
 
 ---
 
@@ -20,12 +28,12 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 6. [Publicar la app en Vercel](#6-publicar-la-app-en-vercel)
 7. [Decirle a Supabase cuál es tu web](#7-decirle-a-supabase-cuál-es-tu-web)
 8. [Instalar la app en el móvil](#8-instalar-la-app-en-el-móvil)
-9. [Cómo probar esta entrega](#9-cómo-probar-esta-entrega-11)
+9. [Cómo probar las entregas](#9-cómo-probar-las-entregas)
 10. [Actualizar la app más adelante](#10-actualizar-la-app-más-adelante)
 11. [Para desarrolladores](#11-para-desarrolladores)
 12. [Licencias y créditos](#12-licencias-y-créditos)
 
-Tiempo estimado la primera vez: **30–40 minutos**. No necesitas instalar nada en tu ordenador: todo se hace desde el navegador.
+Tiempo estimado la primera vez: **30–40 minutos**, aunque tu instalación ya está hecha. No necesitas instalar nada en tu ordenador: todo se hace desde el navegador.
 
 ---
 
@@ -61,6 +69,8 @@ Las tablas y sus reglas de seguridad están en la carpeta [`supabase/migrations`
 | 1 | `20261007000100_core_schema.sql` | Crea todas las tablas |
 | 2 | `20261007000200_rls.sql` | Activa la seguridad: cada usuario solo ve sus datos |
 | 3 | `20261007000300_profiles_on_signup.sql` | Crea tu perfil automáticamente |
+| 4 | `20261008000100_profile_public_identity.sql` | Nombre de usuario y datos públicos para la futura comunidad |
+| 5 | `20261008000200_fk_indexes.sql` | Índices para que las consultas sigan siendo rápidas |
 
 Para cada archivo:
 
@@ -69,6 +79,15 @@ Para cada archivo:
 3. Pega el contenido y pulsa **Run**. Tiene que aparecer *Success. No rows returned*.
 
 Si algún archivo da error, no sigas con el siguiente: copia el mensaje y pásamelo.
+
+**Cargar el catálogo de ejercicios** (una vez). Necesitas el [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) o pedírmelo:
+
+```bash
+npx supabase login
+npx supabase functions deploy seed-catalog --project-ref <tu-project-ref>
+```
+
+Después abre `https://<tu-project-ref>.supabase.co/functions/v1/seed-catalog` con la cabecera de tu clave *anon*, o pide que la ejecute por ti. Responde `{"ok":true,"total":876,...}`. Se puede repetir sin problema: solo escribe lo que haya cambiado.
 
 ## 4. Configurar el acceso (solo tu cuenta)
 
@@ -155,7 +174,33 @@ Para que el enlace del correo lleve a tu app:
 
 A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez descarga tus datos; después abre al instante, también sin cobertura.
 
-## 9. Cómo probar esta entrega (1.1)
+## 9. Cómo probar las entregas
+
+### Entrega 1.2: biblioteca de ejercicios y base de la Comunidad
+
+1. **Actualizar la app.** Esta vez, cierra la app del todo (deslízala fuera de las apps abiertas) y vuelve a abrirla. Si sigues viendo la versión anterior, repítelo una vez más.
+   - A partir de esta versión, cuando haya una nueva verás abajo **"Hay una versión nueva · Actualizar"**.
+2. **Navegación:** abajo verás **Hoy, Calendario, Rutinas, Progreso y Comunidad**. **Perfil** se abre desde el círculo con tu inicial, arriba a la derecha.
+3. **Rutinas → Biblioteca de ejercicios:** tiene que poner 876 ejercicios. La primera vez que se abre tras actualizar, el móvil descarga el catálogo (unos segundos).
+4. **Buscador:** prueba `sentadilla`, `press banca`, `squat` (en inglés también vale), `gluteos` (sin tilde) o `curl mancuernas`. Los resultados aparecen al escribir.
+5. **Filtros:** toca **Músculo** y elige *Bíceps*; luego **Material** y elige *Mancuernas*. Entra en un ejercicio y vuelve: el filtro sigue puesto.
+6. **Ficha de un ejercicio:**
+   - las dos fotos se alternan y muestran el movimiento;
+   - se ven el músculo principal, los secundarios, el material y los pasos;
+   - las instrucciones del catálogo aún están en inglés.
+7. **Ejercicio propio:**
+   1. Pulsa el botón amarillo **+**.
+   2. Si guardas sin rellenar, te avisa de lo que falta.
+   3. Crea por ejemplo "Hip thrust en máquina" con músculo principal *Glúteos*.
+   4. Después, edítalo y bórralo.
+   5. El filtro **Mis ejercicios** muestra solo los tuyos.
+8. **Comunidad:**
+   1. Mira la pantalla de "Próximamente".
+   2. Ve a tu perfil y reserva tu **nombre de usuario**: escribe `@tunombre` y pulsa Intro.
+   3. Vuelve a Comunidad: verás "Tu nombre público será @tunombre".
+9. **Sin conexión:** en modo avión, abre la biblioteca y busca. Funciona igual. Las fotos que ya hayas visto también se ven sin red.
+
+### Entrega 1.1: login, perfil y modo sin conexión
 
 1. **Entrar:** abre la app instalada, escribe tu email y pulsa **Enviar código**. Escribe el código del correo, o usa **Entrar con contraseña**.
    - Si pruebas con un email que no es el tuyo, tiene que decirte que esa cuenta no existe.
@@ -171,8 +216,6 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
    - En Supabase, **Table Editor → profiles**, verás el cambio guardado.
 5. **Otro dispositivo:** entra desde el ordenador y cambia el idioma. Al abrir la app en el móvil, también cambia.
 6. **Cerrar sesión:** en **Perfil**. Si hubiera cambios sin subir, la app te avisa antes.
-
-Las pantallas Calendario, Rutinas y Progreso muestran en qué entrega llegan.
 
 ## 10. Actualizar la app más adelante
 
@@ -200,6 +243,7 @@ npm run dev                 # http://localhost:3000
 | `npm run test:db` | Tests de seguridad RLS (pgTAP) contra el Supabase local |
 | `npx supabase db reset` | Recrea la base de datos local con las migraciones |
 | `npm run icons` | Regenera los iconos de la PWA |
+| `npm run seed:catalog` | Carga/actualiza el catálogo de ejercicios (necesita `SUPABASE_URL` y `SUPABASE_SECRET_KEY`) |
 
 Test de integración de la sincronización contra el Supabase local:
 
@@ -213,24 +257,26 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 src/
   app/            Rutas de Next.js: solo montan pantallas
   features/       Pantallas y hooks por funcionalidad (auth, profile, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod)… Sin React ni Supabase
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda de ejercicios… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)
     repositories/ Única forma de escribir datos desde la UI
     supabase/     Cliente de Supabase
-  i18n/           Textos en español e inglés
+  i18n/           Textos en español e inglés, y nombres traducidos del catálogo (exercise-names/)
   components/ui/  Componentes base (estilo shadcn/ui)
   service-worker/ Service worker (Serwist): caché de la app para usarla sin conexión
 supabase/
   migrations/     Esquema SQL y políticas RLS
   tests/          Tests de RLS (pgTAP)
   templates/      Plantilla del correo de acceso
+  functions/      Edge Function que carga el catálogo de ejercicios
 docs/DECISIONES.md  Decisiones tomadas y pendientes
+docs/SOCIAL.md      Diseño de la futura Comunidad
 ```
 
 ## 12. Licencias y créditos
 
 - Tipografía **Archivo** (Omnibus-Type), licencia SIL Open Font License 1.1, vía Fontsource.
 - Iconos **Lucide**, licencia ISC.
-- El catálogo de ejercicios llegará en la entrega 1.2 desde [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (dominio público, *Unlicense*). Se citará aquí y en la app.
+- Catálogo de ejercicios e imágenes: [free-exercise-db](https://github.com/yuhonas/free-exercise-db), de dominio público (*Unlicense*), servido por jsDelivr. Nombres traducidos al español para esta app. Se cita también en la ficha de cada ejercicio.

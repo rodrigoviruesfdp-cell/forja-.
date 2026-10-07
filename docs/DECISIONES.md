@@ -7,8 +7,8 @@ Documento vivo: se actualiza en cada entrega.
 | # | Entrega | Estado |
 |---|---|---|
 | 1.1 | Cimientos: app instalable, login, perfil, idioma, unidades, base de datos completa con RLS, sincronización sin conexión | ✅ Hecha |
-| 1.2 | Catálogo de ejercicios (free-exercise-db traducido), buscador con filtros, ejercicios propios | Siguiente |
-| 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas | |
+| 1.2 | Catálogo de ejercicios (free-exercise-db traducido), buscador con filtros, ejercicios propios; base de la Comunidad | ✅ Hecha |
+| 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas | Siguiente |
 | 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR | |
 | 1.5 | Otros deportes y calendario mensual con estados y racha | |
 | 1.6 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
@@ -97,6 +97,46 @@ Documento vivo: se actualiza en cada entrega.
 - **Guardado automático** en el perfil: los selectores guardan al cambiar y los textos al salir del campo. Sin botón "Guardar".
 - Indicador de sincronización siempre visible (✓ verde, nube tachada o error). Responde a "¿se ha guardado mi entreno?".
 
+### Biblioteca de ejercicios (1.2)
+
+- **Fuente: [free-exercise-db](https://github.com/yuhonas/free-exercise-db)**, dominio público (Unlicense). Son 876 ejercicios, fijados a un commit concreto (`f00c92c7`) para que nunca cambien sin querer.
+- **Identificadores deterministas** (UUID v5 a partir del id original): el mismo ejercicio tiene el mismo id en local y en producción, y recargar el catálogo nunca duplica nada.
+- **Carga del catálogo:**
+  - Se hace con una Edge Function de Supabase (`supabase/functions/seed-catalog`) que descarga el dataset y escribe **solo lo nuevo o lo cambiado**. Así, repetirla no obliga a los móviles a volver a descargar nada.
+  - En producción se invocó una vez desde la base de datos con la extensión `pg_net` (habilitada para ello).
+  - En local: `npm run seed:catalog`.
+- **Traducciones dentro de la app, no en la base de datos** (`src/i18n/exercise-names/es.json`, un nombre por ejercicio). Corregir una traducción es publicar la app, sin tocar datos. El archivo se carga bajo demanda (~15 KB comprimido).
+- **Las instrucciones del catálogo siguen en inglés.** La app lo avisa.
+- **Imágenes:** dos fotos por ejercicio (inicio y final del movimiento) servidas por jsDelivr y fijadas al mismo commit.
+  - En la ficha se alternan como un pequeño bucle animado; con "reducir movimiento" se muestran una junto a otra.
+  - El service worker las guarda al verlas (hasta 600, durante 90 días) para usarlas sin conexión.
+- **Búsqueda instantánea en el móvil**, sin red:
+  - ignora tildes y mayúsculas;
+  - todas las palabras deben aparecer, en cualquier orden;
+  - busca en el nombre en español, en el original en inglés, en el músculo y en el material;
+  - ordena primero los nombres que empiezan por lo buscado, y los más cortos.
+- **Filtros:** músculo principal, material y "Mis ejercicios". La búsqueda y los filtros se recuerdan al ir a una ficha y volver.
+- **Ejercicios propios:**
+  - privados (RLS);
+  - músculo principal obligatorio, secundarios, material, tipo e instrucciones (un paso por línea);
+  - editar y borrar (borrado suave);
+  - el catálogo es de solo lectura.
+- **Navegación:**
+  - la barra inferior pasa a ser Hoy, Calendario, Rutinas, Progreso y **Comunidad**;
+  - **Perfil** se abre desde el botón con tu inicial en la cabecera;
+  - la biblioteca está dentro de Rutinas.
+- **Actualizaciones de la app:** una versión nueva se descarga en segundo plano y **espera**. Un aviso "Hay una versión nueva · Actualizar" deja elegir el momento, para que nunca se recargue a mitad de un entreno. Si no se toca, entra al cerrar la app del todo.
+- **Índices** para todas las claves foráneas (aviso del revisor de rendimiento de Supabase). Los índices antiguos de una sola columna se mantienen: no estorban y quitarlos requería confirmación manual.
+- **Comunidad:**
+  - el diseño completo está en [`docs/SOCIAL.md`](SOCIAL.md);
+  - de momento solo se reserva el `username` y se añaden `bio`, `avatar_url` e `is_private` (privado por defecto) a `profiles`;
+  - las tablas sociales se crearán al construirlo.
+
+### Infraestructura
+
+- **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
+- **Vercel:** proyecto `forja` conectado al repositorio de GitHub. Cada `push` publica sola la app en <https://forja-gilt-six.vercel.app>. Las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ya están configuradas.
+
 ### Diseño visual
 
 - Superficies grafito (como el suelo de goma del gimnasio) y texto color tiza.
@@ -106,10 +146,11 @@ Documento vivo: se actualiza en cada entrega.
 
 ## Pendiente / a vigilar
 
-- **Entrega 1.2:** traducir al español los nombres de los ejercicios de free-exercise-db (con un archivo revisable). Las instrucciones quedan en inglés de momento. Las imágenes se sirven desde GitHub; más adelante, copiarlas a Supabase Storage.
+- **Instrucciones de los ejercicios en español:** pendiente (876 textos). Los nombres ya están traducidos y se pueden revisar en `src/i18n/exercise-names/es.json`.
+- **Imágenes del catálogo en nuestro propio almacenamiento** (Supabase Storage) si jsDelivr da problemas.
 - **Datos de ejemplo:** llegarán con rutinas y sesiones (1.3–1.6), con un botón para cargarlos y otro para borrarlos.
 - **`body_metrics` y `goals`:** las tablas existen, pero no tienen pantallas en la Fase 1.
-- **Aviso de "nueva versión disponible":** ahora la app se actualiza sola al abrirla con conexión. Valorar un aviso para no cambiar de versión a mitad de una sesión.
+- **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.
-- **Fase 3 (público):** dominio propio para el correo, verificar dominio en Resend, plan Vercel Pro, onboarding y políticas RLS de lectura pública según `visibility`.
+- **Fase 3 (público):** ver [`docs/SOCIAL.md`](SOCIAL.md). Incluye dominio propio para el correo, plan Vercel Pro, RGPD, moderación y RLS de lectura pública según `visibility`.
 - **Passkeys (Face ID / huella):** Supabase empieza a soportarlas. Serían el login ideal para la app instalada; revisar cuando estén disponibles en el plan gratuito.

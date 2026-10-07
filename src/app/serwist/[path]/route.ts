@@ -8,7 +8,19 @@ const revision =
   crypto.randomUUID();
 
 /** Every screen of the app, precached so it opens without coverage. */
-const APP_SHELL_PAGES = ["/today", "/calendar", "/routines", "/progress", "/profile", "/login", "/auth/confirm"];
+const APP_SHELL_PAGES = [
+  "/today",
+  "/calendar",
+  "/routines",
+  "/exercises",
+  "/exercises/detail",
+  "/exercises/edit",
+  "/progress",
+  "/community",
+  "/profile",
+  "/login",
+  "/auth/confirm",
+];
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } = createSerwistRoute({
   swSrc: "src/service-worker/sw.ts",
@@ -16,7 +28,7 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   globPatterns: [
     ".next/static/**/*.{js,css,html,ico,png,svg,webp,json,webmanifest}",
     // Fonts too, so the very first offline launch already looks right (Vietnamese subset excluded).
-    ".next/static/media/archivo-latin*.woff2",
+    ".next/static/**/archivo-latin*.woff2",
     "public/**/*",
   ],
   useNativeEsbuild: true,

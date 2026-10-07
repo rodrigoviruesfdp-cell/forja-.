@@ -4,6 +4,7 @@ import { useTranslations } from "use-intl";
 import { Spinner } from "@/components/ui/spinner";
 import { PageHeader } from "@/features/shell/page-header";
 import { AccountSection } from "./sections/account-section";
+import { CommunitySection } from "./sections/community-section";
 import { PreferencesSection } from "./sections/preferences-section";
 import { SyncSection } from "./sections/sync-section";
 import { TrainingSection } from "./sections/training-section";
@@ -15,10 +16,11 @@ export function ProfileScreen() {
 
   return (
     <>
-      <PageHeader title={t("title")} />
+      <PageHeader title={t("title")} backFallback="/today" hideProfile />
       <div className="flex flex-col gap-10 px-4 pt-4 pb-8">
         <PreferencesSection />
         {profile ? <TrainingSection profile={profile} /> : <Spinner />}
+        {profile ? <CommunitySection profile={profile} /> : null}
         <SyncSection />
         <AccountSection />
         <p className="text-center text-xs text-muted-foreground">
