@@ -6,10 +6,12 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.2.** Ya funcionan:
+> **Estado: entrega 1.3.** Ya funcionan:
 > - el login, el perfil y las preferencias;
 > - la sincronización sin conexión y la app instalable;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
+> - el **constructor de rutinas**: semanal o en rotación A/B/C/D, con deportes, y la pantalla **Hoy** que te dice qué toca;
+> - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
 > Calendario y Progreso son de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md).
@@ -176,10 +178,43 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
 
 ## 9. Cómo probar las entregas
 
+### Entrega 1.3: rutinas y nuevo diseño
+
+1. **Actualizar la app.** Ábrela con conexión. Arriba aparecerá el aviso **"Hay una versión nueva de la app"**: toca **Actualizar**. Si aún tenías la 1.1, se actualiza sola y se recarga una vez.
+2. **Nuevo diseño:**
+   - La barra de abajo flota y es translúcida. La pestaña elegida tiene una "lente" que se desliza al cambiar.
+   - Los títulos grandes se encogen en la barra de arriba al hacer scroll.
+   - Al entrar en una pantalla, la nueva llega desde la derecha; al volver, se va hacia la derecha.
+   - Botones y tarjetas se "hunden" un poco al tocarlos.
+   - Tu inicial, arriba a la derecha, lleva un punto con el estado de la sincronización (✓ verde = todo guardado).
+3. **Hoy:** sin rutina, te propone crear una.
+4. **Rutinas → plantilla "A/B/C/D + deporte" → Usar:**
+   - se crea la rutina y se abre el editor;
+   - es tu rutina activa (lo pone en verde arriba);
+   - hay 4 días A, B, C, D con ejercicios y fútbol los miércoles.
+5. **Editar un ejercicio:** toca uno.
+   - Se abre una hoja desde abajo y la pantalla de detrás se hace pequeña, como en el iPhone. Se cierra arrastrándola hacia abajo.
+   - Cambia las series con **− / +**.
+   - Activa o quita el **rango** de repeticiones (8–12) o déjalas fijas.
+   - Prueba **Subir**, **Bajar** y **Mover a otro día**.
+6. **Reordenar:** mantén pulsado el asa ⠿ de un ejercicio y arrástralo; los demás se apartan. Para cambiar el orden A/B/C/D, toca **Ordenar**.
+7. **Añadir ejercicios:** **Añadir ejercicio** abre un buscador. Marca varios y pulsa **Añadir N ejercicios**.
+8. **Días:**
+   - **Añadir día** crea el siguiente de la rotación (E…).
+   - **Añadir deporte** permite elegir uno (pádel, running…) y fijarlo a un día o dejarlo sin día.
+   - Con el menú **⋯** de un día puedes editarlo, duplicarlo o eliminarlo. Al eliminar aparece **Deshacer**.
+9. **Semanal o rotación:** cambia **Organización** a *Semanal*.
+   - Ves la semana de lunes a domingo, con los días repartidos en los días que sueles entrenar.
+   - Los días sin entreno muestran **Descanso** y un **+**.
+   - Vuelve a *Rotación* cuando quieras.
+10. **Ajustes de la rutina:** **Días que sueles entrenar** (círculos L M X J V S D) y **Objetivo semanal**.
+11. **Hoy:** muestra lo que toca hoy con sus ejercicios, lo siguiente ("Después · mañana") y tu semana.
+12. **Varias rutinas:** crea otra con el **+** de Rutinas. Con el menú **⋯** puedes cambiarle el nombre, duplicarla, hacerla activa o eliminarla (te pide confirmación).
+13. **Sin conexión:** en modo avión, abre la rutina y cambia algo. Al volver la red se sube sola.
+
 ### Entrega 1.2: biblioteca de ejercicios y base de la Comunidad
 
-1. **Actualizar la app.** Abre la app con conexión y espera unos segundos: se recargará sola una vez y ya tendrás la 1.2. Si no pasa en un minuto, ciérrala del todo y vuelve a abrirla.
-   - A partir de esta versión, cuando haya una nueva verás abajo **"Hay una versión nueva · Actualizar"**.
+1. **Actualizar la app.** (Con la 1.3 ya no hace falta: se actualiza con el aviso.)
 2. **Navegación:** abajo verás **Hoy, Calendario, Rutinas, Progreso y Comunidad**. **Perfil** se abre desde el círculo con tu inicial, arriba a la derecha.
 3. **Rutinas → Biblioteca de ejercicios:** tiene que poner 876 ejercicios. La primera vez que se abre tras actualizar, el móvil descarga el catálogo (unos segundos).
 4. **Buscador:** prueba `sentadilla`, `press banca`, `squat` (en inglés también vale), `gluteos` (sin tilde) o `curl mancuernas`. Los resultados aparecen al escribir.
@@ -189,10 +224,10 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
    - se ven el músculo principal, los secundarios, el material y los pasos;
    - las instrucciones del catálogo aún están en inglés.
 7. **Ejercicio propio:**
-   1. Pulsa el botón amarillo **+**.
+   1. Pulsa el botón **+** de arriba a la derecha.
    2. Si guardas sin rellenar, te avisa de lo que falta.
    3. Crea por ejemplo "Hip thrust en máquina" con músculo principal *Glúteos*.
-   4. Después, edítalo y bórralo.
+   4. Después, edítalo (lápiz de arriba) y elimínalo (aparece **Deshacer** por si te equivocas).
    5. El filtro **Mis ejercicios** muestra solo los tuyos.
 8. **Comunidad:**
    1. Mira la pantalla de "Próximamente".
@@ -204,22 +239,22 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
 
 1. **Entrar:** abre la app instalada, escribe tu email y pulsa **Enviar código**. Escribe el código del correo, o usa **Entrar con contraseña**.
    - Si pruebas con un email que no es el tuyo, tiene que decirte que esa cuenta no existe.
-2. **Pantalla Hoy:** te saluda con tu nombre y la fecha. El ✓ verde de arriba a la derecha significa "todo guardado en el servidor".
+2. **Pantalla Hoy:** te saluda con tu nombre y la fecha. El ✓ verde sobre tu inicial, arriba a la derecha, significa "todo guardado en el servidor".
 3. **Perfil:**
    - Cambia el **idioma** a English: toda la app cambia al momento.
    - Cambia **kg / lb**. De momento solo se guarda; se notará cuando registres pesos (entrega 1.4).
    - Prueba los temas **Oscuro, Claro y Sistema**.
    - Rellena nombre, objetivo, nivel y lesiones.
 4. **Sin conexión:**
-   - Activa el **modo avión**, cambia el nivel y **cierra y vuelve a abrir la app**. Tiene que abrir igual, con el cambio hecho, y el icono de arriba a la derecha tiene que mostrar una nube tachada.
+   - Activa el **modo avión**, cambia el nivel y **cierra y vuelve a abrir la app**. Tiene que abrir igual, con el cambio hecho, y el punto de tu inicial tiene que mostrar una nube tachada.
    - Quita el modo avión. En unos segundos vuelve el ✓ verde.
    - En Supabase, **Table Editor → profiles**, verás el cambio guardado.
 5. **Otro dispositivo:** entra desde el ordenador y cambia el idioma. Al abrir la app en el móvil, también cambia.
-6. **Cerrar sesión:** en **Perfil**. Si hubiera cambios sin subir, la app te avisa antes.
+6. **Cerrar sesión:** en **Perfil**. Te lo confirma con una hoja desde abajo y, si hubiera cambios sin subir, te avisa.
 
 ## 10. Actualizar la app más adelante
 
-Cada vez que suba una entrega nueva a GitHub, **Vercel la publica sola** en 1–2 minutos. La app instalada se actualiza la siguiente vez que la abras con conexión.
+Cada vez que suba una entrega nueva a GitHub, **Vercel la publica sola** en 1–2 minutos. La próxima vez que abras la app con conexión verás arriba **"Hay una versión nueva de la app · Actualizar"**. Nunca se recarga sola en mitad de un entreno.
 
 Si una entrega trae una migración nueva (un archivo nuevo en `supabase/migrations`), te lo diré y tendrás que pegarla en el SQL Editor como en el paso 3.
 
@@ -256,15 +291,16 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 ```
 src/
   app/            Rutas de Next.js: solo montan pantallas
-  features/       Pantallas y hooks por funcionalidad (auth, profile, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda de ejercicios… Sin React ni Supabase
+  features/       Pantallas y hooks por funcionalidad (auth, profile, routines, shell…)
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, reglas de rutinas y plan del día… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)
     repositories/ Única forma de escribir datos desde la UI
     supabase/     Cliente de Supabase
   i18n/           Textos en español e inglés, y nombres traducidos del catálogo (exercise-names/)
-  components/ui/  Componentes base (estilo shadcn/ui)
+  components/ui/  Componentes base al estilo iOS (botones, tarjetas, listas agrupadas, hojas con vaul, avisos con sonner…)
+  components/motion/ Muelle común, pulsación y entradas escalonadas (Motion)
   service-worker/ Service worker (Serwist): caché de la app para usarla sin conexión
 supabase/
   migrations/     Esquema SQL y políticas RLS
@@ -277,6 +313,7 @@ docs/SOCIAL.md      Diseño de la futura Comunidad
 
 ## 12. Licencias y créditos
 
-- Tipografía **Archivo** (Omnibus-Type), licencia SIL Open Font License 1.1, vía Fontsource.
+- Tipografía del sistema: **SF Pro** en iPhone, iPad y Mac; Roboto o Segoe UI en el resto. No se descarga ninguna fuente.
+- **Motion** (animaciones), **vaul** (hojas inferiores) y **sonner** (avisos), licencia MIT.
 - Iconos **Lucide**, licencia ISC.
 - Catálogo de ejercicios e imágenes: [free-exercise-db](https://github.com/yuhonas/free-exercise-db), de dominio público (*Unlicense*), servido por jsDelivr. Nombres traducidos al español para esta app. Se cita también en la ficha de cada ejercicio.

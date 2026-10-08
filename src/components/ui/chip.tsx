@@ -1,23 +1,25 @@
-import type { ComponentProps } from "react";
+"use client";
+
+import { type HTMLMotionProps, motion } from "motion/react";
+import { PRESS } from "@/components/motion/spring";
 import { cn } from "@/lib/utils";
 
-interface ChipProps extends ComponentProps<"button"> {
+interface ChipProps extends HTMLMotionProps<"button"> {
   active?: boolean;
 }
 
-/** Filter/toggle pill. 44px tall so it is easy to hit with a thumb. */
+/** Filter/toggle capsule. Selected = solid label color (the yellow is kept for main actions). */
 export function Chip({ active = false, className, type = "button", ...props }: ChipProps) {
   return (
-    <button
+    <motion.button
       type={type}
       data-active={active}
       className={cn(
-        "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold whitespace-nowrap transition-colors",
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-input bg-surface text-foreground hover:bg-surface-2",
+        "inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 text-subhead font-semibold whitespace-nowrap",
+        active ? "bg-foreground text-background" : "bg-surface-2 text-foreground",
         className,
       )}
+      {...PRESS}
       {...props}
     />
   );

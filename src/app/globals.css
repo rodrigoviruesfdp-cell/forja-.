@@ -1,56 +1,90 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "@fontsource-variable/archivo/wdth.css";
 
 /*
-  Visual system (see docs/DECISIONES.md):
-  - Graphite surfaces like gym rubber flooring, chalk-white text.
-  - Colors come from the competition plate code and always carry meaning:
-    yellow = primary action, green = done, red = personal record, blue = planned.
-  - One family (Archivo) with its width axis: condensed and heavy for numbers,
-    normal width for reading.
+  Visual system (see docs/DECISIONES.md, "Diseño visual"), after Apple's Human Interface Guidelines:
+  - Neutral canvas (#F5F5F7 / black), white or #1C1C1E cards, translucent materials for
+    bars, menus and sheets.
+  - Hairline borders (6% black / 12% white) and wide, soft shadows.
+  - Concentric corners: a nested element's radius is the outer radius minus the padding.
+  - System font (SF Pro on Apple devices, Roboto/Segoe elsewhere); SF Pro Rounded for numbers.
+  - Yellow is only for the main action. Green = done, red = record, blue = planned.
 */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --radius: 0.875rem;
-
-  /* Light ("steel") */
-  --background: #eceef1;
-  --foreground: #16181b;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
   --surface: #ffffff;
-  --surface-2: #e1e4e8;
-  --muted-foreground: #5a6169;
-  --border: #cfd4da;
-  --input: #c3c9d0;
-  --ring: #b88f00;
+  /* Fills (iOS systemFill family): inputs, segmented tracks, tags. Translucent on purpose. */
+  --surface-2: rgb(118 118 128 / 0.12);
+  --surface-3: rgb(118 118 128 / 0.2);
+  /* #6E6E73 keeps 4.5:1 on white (readable in a bright gym); #86868B for hints and captions. */
+  --muted-foreground: #6e6e73;
+  --tertiary-foreground: #86868b;
+  --border: rgb(0 0 0 / 0.06);
+  --separator: rgb(60 60 67 / 0.14);
+  --input: rgb(118 118 128 / 0.12);
+  --ring: rgb(0 113 227 / 0.55);
+  --material: rgb(255 255 255 / 0.7);
+  --material-thick: rgb(255 255 255 / 0.85);
+  --segment-thumb: #ffffff;
 
-  --primary: #f2c014;
-  --primary-foreground: #16181b;
-  --done: #23874a;
-  --pr: #d63a27;
-  --planned: #3462d4;
-  --destructive: #c4321f;
+  --primary: #ffcc00;
+  --primary-foreground: #1d1d1f;
+  --done: #34c759;
+  --pr: #ff3b30;
+  --planned: #007aff;
+  --destructive: #ff3b30;
+
+  --elevation-card: 0 8px 30px rgb(0 0 0 / 0.06);
+  --elevation-float: 0 12px 40px rgb(0 0 0 / 0.12), 0 2px 8px rgb(0 0 0 / 0.04);
+
+  /* Height of the top bar under the status bar; sticky elements sit below it. */
+  --nav-h: calc(env(safe-area-inset-top) + 3.25rem);
+  /* Floating tab bar: 64px capsule + 12px gap to the bottom edge (or the home indicator). */
+  --tabbar-space: calc(64px + max(env(safe-area-inset-bottom), 12px) + 1.25rem);
+
+  /* SF tracking table, applied only on Apple devices (the boot script adds .apple). */
+  --tracking-body: 0;
+  --tracking-display: 0;
+  --tracking-caption: 0;
+
+  /* iOS navigation spring (response 0.5 s, no bounce) as a CSS easing, for view transitions. */
+  --ease-spring-nav: linear(0, 0.0401, 0.1313, 0.2431, 0.3577, 0.4656, 0.562, 0.6452, 0.7154, 0.7736, 0.821, 0.8594, 0.89, 0.9144, 0.9336, 0.9487, 0.9605, 0.9696, 0.9767, 0.9822, 0.9864, 0.9896, 0.9921, 0.994, 1);
+}
+
+.apple {
+  --tracking-body: -0.022em;
+  --tracking-display: 0.004em;
+  --tracking-caption: -0.008em;
 }
 
 .dark {
-  /* Dark ("rubber floor") */
-  --background: #15171a;
-  --foreground: #edebe6;
-  --surface: #1e2125;
-  --surface-2: #2a2e33;
-  --muted-foreground: #9aa1a9;
-  --border: #31363c;
-  --input: #3b4148;
-  --ring: #f5c518;
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --surface: #1c1c1e;
+  --surface-2: rgb(118 118 128 / 0.24);
+  --surface-3: rgb(118 118 128 / 0.32);
+  --muted-foreground: #98989d;
+  --tertiary-foreground: #86868b;
+  --border: rgb(255 255 255 / 0.12);
+  --separator: rgb(84 84 88 / 0.6);
+  --input: rgb(118 118 128 / 0.24);
+  --ring: rgb(10 132 255 / 0.6);
+  --material: rgb(0 0 0 / 0.6);
+  --material-thick: rgb(28 28 30 / 0.82);
+  --segment-thumb: #636366;
 
-  --primary: #f5c518;
-  --primary-foreground: #15171a;
-  --done: #3db36b;
-  --pr: #f0503c;
-  --planned: #5b86f2;
-  --destructive: #f0503c;
+  --primary: #ffd60a;
+  --primary-foreground: #1d1d1f;
+  --done: #30d158;
+  --pr: #ff453a;
+  --planned: #0a84ff;
+  --destructive: #ff453a;
+
+  --elevation-card: 0 8px 30px rgb(0 0 0 / 0.35);
+  --elevation-float: 0 12px 40px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
 }
 
 @theme inline {
@@ -58,10 +92,14 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-muted-foreground: var(--muted-foreground);
+  --color-tertiary-foreground: var(--tertiary-foreground);
   --color-border: var(--border);
+  --color-separator: var(--separator);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-material: var(--material);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-done: var(--done);
@@ -69,12 +107,47 @@
   --color-planned: var(--planned);
   --color-destructive: var(--destructive);
 
-  --radius-sm: calc(var(--radius) - 6px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
 
-  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: var(--elevation-card);
+  --shadow-float: var(--elevation-float);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Segoe UI", Roboto, "Helvetica Neue", system-ui, sans-serif;
+  --font-rounded: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "SF Pro", Roboto, system-ui, sans-serif;
+
+  /* iOS Dynamic Type sizes (default "Large" setting). */
+  --text-large-title: 2.125rem;
+  --text-large-title--line-height: 1.2;
+  --text-large-title--font-weight: 700;
+  --text-title-1: 1.75rem;
+  --text-title-1--line-height: 1.2;
+  --text-title-1--font-weight: 700;
+  --text-title-2: 1.375rem;
+  --text-title-2--line-height: 1.27;
+  --text-title-2--font-weight: 700;
+  --text-title-3: 1.25rem;
+  --text-title-3--line-height: 1.25;
+  --text-title-3--font-weight: 600;
+  --text-headline: 1.0625rem;
+  --text-headline--line-height: 1.3;
+  --text-headline--font-weight: 600;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.3;
+  --text-callout: 1rem;
+  --text-callout--line-height: 1.3;
+  --text-subhead: 0.9375rem;
+  --text-subhead--line-height: 1.33;
+  --text-footnote: 0.8125rem;
+  --text-footnote--line-height: 1.38;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.33;
+  --text-caption-2: 0.6875rem;
+  --text-caption-2--line-height: 1.2;
 }
 
 @layer base {
@@ -85,16 +158,27 @@
   html {
     -webkit-tap-highlight-color: transparent;
     text-size-adjust: 100%;
+    background: var(--background);
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-stretch: 100%;
+    @apply bg-background text-body text-foreground font-sans antialiased;
+    letter-spacing: var(--tracking-body);
     overscroll-behavior-y: none;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: var(--tracking-display);
   }
 
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  ::selection {
+    background: rgb(0 122 255 / 0.25);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -107,18 +191,42 @@
   }
 }
 
+/* Weights, reps and stats: SF Pro Rounded (as in Apple Fitness), tabular figures. */
 @utility numeric {
-  /* Weights, reps and stats: condensed, heavy, tabular. */
-  font-stretch: 75%;
-  font-weight: 750;
+  font-family: var(--font-rounded);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 @utility heading {
-  font-stretch: 87.5%;
-  font-weight: 750;
-  letter-spacing: -0.015em;
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+}
+
+@utility tracking-caption {
+  letter-spacing: var(--tracking-caption);
+}
+
+/* Translucent "vibrancy" material for bars, menus and sheets. */
+@utility material {
+  background-color: var(--material);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+
+@utility material-thick {
+  background-color: var(--material-thick);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+}
+
+/*
+  Concentric corners. A container sets --outer-r and --outer-p (see <Card>); children that
+  sit on its padding edge use rounded-concentric: outer radius minus padding (never below 4px).
+*/
+@utility rounded-concentric {
+  border-radius: max(calc(var(--outer-r, 22px) - var(--outer-p, 16px)), 4px);
 }
 
 @utility pb-safe {
@@ -127,4 +235,165 @@
 
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --material: rgb(255 255 255 / 0.96);
+    --material-thick: rgb(255 255 255 / 0.98);
+  }
+  .dark {
+    --material: rgb(18 18 20 / 0.96);
+    --material-thick: rgb(28 28 30 / 0.98);
+  }
+}
+
+/*
+  Sheets (vaul) scale the page back like iOS. Vaul scales from the top of the document;
+  on a scrolled page that would shift what you are looking at, so the origin is moved to
+  the top of the viewport and the visible part is clipped with rounded corners.
+*/
+[data-vaul-drawer-wrapper] {
+  transform-origin: 50% var(--sheet-origin, 0px) !important;
+}
+
+[data-vaul-drawer-wrapper][data-sheet-open] {
+  overflow: visible !important;
+  border-radius: 0 !important;
+  clip-path: inset(var(--sheet-origin, 0px) 0 calc(100% - var(--sheet-origin, 0px) - 100dvh) 0 round 14px);
+}
+
+/*
+  Page transitions (React <ViewTransition>, see PageTransition): push from the right when
+  drilling down, pop back to the right when returning, nothing when switching tabs.
+  The direction comes from <html data-nav>, set by NavDirection.
+*/
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(.page-exit),
+::view-transition-new(.page-enter) {
+  animation: none;
+}
+
+:root:not([data-nav="forward"], [data-nav="back"])::view-transition-old(.page-exit) {
+  display: none;
+}
+
+:root[data-nav="forward"]::view-transition-new(.page-enter) {
+  animation: 0.6s var(--ease-spring-nav) both page-from-right;
+}
+
+:root[data-nav="forward"]::view-transition-old(.page-exit) {
+  animation: 0.6s var(--ease-spring-nav) both page-to-left;
+}
+
+:root[data-nav="back"]::view-transition-group(.page-exit) {
+  z-index: 2;
+}
+
+:root[data-nav="back"]::view-transition-old(.page-exit) {
+  animation: 0.6s var(--ease-spring-nav) both page-to-right;
+}
+
+:root[data-nav="back"]::view-transition-new(.page-enter) {
+  animation: 0.6s var(--ease-spring-nav) both page-from-left;
+}
+
+/*
+  The tab bar is named only while a transition runs: a permanent view-transition-name would
+  make it a "backdrop root" and switch off its blur. Named, it stays live (its lens springs).
+*/
+:root:active-view-transition [data-nav-tabs] {
+  view-transition-name: tab-bar;
+}
+
+::view-transition-group(tab-bar) {
+  animation: none;
+  z-index: 50;
+}
+
+::view-transition-old(tab-bar) {
+  display: none;
+}
+
+::view-transition-new(tab-bar) {
+  animation: none;
+}
+
+@keyframes page-from-right {
+  from {
+    translate: 100% 0;
+    box-shadow: -12px 0 40px rgb(0 0 0 / 0.12);
+  }
+  to {
+    translate: 0 0;
+    box-shadow: -12px 0 40px rgb(0 0 0 / 0);
+  }
+}
+
+@keyframes page-to-left {
+  to {
+    translate: -30% 0;
+    filter: brightness(0.92);
+  }
+}
+
+@keyframes page-to-right {
+  from {
+    box-shadow: -12px 0 40px rgb(0 0 0 / 0.12);
+  }
+  to {
+    translate: 100% 0;
+    box-shadow: -12px 0 40px rgb(0 0 0 / 0);
+  }
+}
+
+@keyframes page-from-left {
+  from {
+    translate: -30% 0;
+    filter: brightness(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* iOS activity indicator: eight spokes that fade around the circle. */
+@keyframes activity-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* Sonner toasts dressed as iOS notifications. */
+[data-sonner-toaster] [data-sonner-toast].forja-toast {
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: var(--elevation-float);
+  font-family: var(--font-sans);
+}
+
+/* Toast actions ("Deshacer") are tinted text, like the buttons of an iOS banner. */
+[data-sonner-toaster] [data-sonner-toast].forja-toast [data-button] {
+  height: auto;
+  padding: 0.25rem 0.25rem;
+  background: transparent;
+  color: var(--planned);
+  font-size: var(--text-subhead);
+  font-weight: 600;
 }

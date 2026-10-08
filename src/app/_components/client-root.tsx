@@ -3,6 +3,9 @@
 import { SerwistProvider } from "@serwist/turbopack/react";
 import { type ReactNode, useEffect, useSyncExternalStore } from "react";
 import { IntlProvider } from "use-intl";
+import { MotionProvider } from "@/components/motion/motion-provider";
+import { ConfirmProvider } from "@/components/ui/confirm";
+import { Toaster } from "@/components/ui/toaster";
 import { isSupabaseConfigured } from "@/data/supabase/env";
 import { initAuth } from "@/features/auth/auth-store";
 import { usePrefs } from "@/features/preferences/prefs";
@@ -45,8 +48,13 @@ export function ClientRoot({ children }: { children: ReactNode }) {
         messages={MESSAGES[locale]}
         timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone}
       >
-        <PrefsEffects />
-        {isSupabaseConfigured ? <AuthBoot>{children}</AuthBoot> : <SetupMissing />}
+        <MotionProvider>
+          <ConfirmProvider>
+            <PrefsEffects />
+            {isSupabaseConfigured ? <AuthBoot>{children}</AuthBoot> : <SetupMissing />}
+            <Toaster />
+          </ConfirmProvider>
+        </MotionProvider>
       </IntlProvider>
     </SerwistProvider>
   );

@@ -3,19 +3,23 @@
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "use-intl";
+import { IconButton } from "@/components/ui/icon-button";
+import { setNavDirection } from "./nav-direction";
 
 /** Goes back in history when there is one (keeps scroll and filters), otherwise to `fallback`. */
 export function BackButton({ fallback }: { fallback: string }) {
   const router = useRouter();
   const t = useTranslations("common");
   return (
-    <button
-      type="button"
+    <IconButton
       aria-label={t("back")}
-      onClick={() => (window.history.length > 1 ? router.back() : router.push(fallback))}
-      className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-surface-2"
+      onClick={() => {
+        setNavDirection("back");
+        if (window.history.length > 1) router.back();
+        else router.push(fallback);
+      }}
     >
-      <ChevronLeft className="size-6" />
-    </button>
+      <ChevronLeft strokeWidth={2.4} className="-ml-0.5" />
+    </IconButton>
   );
 }

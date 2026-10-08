@@ -3,20 +3,29 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
-import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm";
+import { Group, GroupRowButton } from "@/components/ui/group";
 import { signOut } from "@/features/auth/auth-store";
 import { usePendingChanges, useUserData } from "@/features/user-data/user-data-context";
-import { Section } from "./section";
 
 export function AccountSection() {
   const t = useTranslations("profile");
+  const common = useTranslations("common");
   const router = useRouter();
+  const confirm = useConfirm();
   const { user, db, runner } = useUserData();
   const pending = usePendingChanges();
   const [busy, setBusy] = useState(false);
 
   async function handleSignOut() {
-    if (pending > 0 && !window.confirm(t("signOutPending", { count: pending }))) return;
+    const ok = await confirm({
+      title: t("signOutTitle"),
+      message: pending > 0 ? t("signOutPending", { count: pending }) : undefined,
+      confirmLabel: t("signOut"),
+      cancelLabel: common("cancel"),
+      destructive: true,
+    });
+    if (!ok) return;
     setBusy(true);
     runner.stop();
     // Local data belongs to this account only: remove it from the phone.
@@ -26,11 +35,10 @@ export function AccountSection() {
   }
 
   return (
-    <Section title={t("account")}>
-      {user.email ? <p className="text-muted-foreground">{t("signedInAs", { email: user.email })}</p> : null}
-      <Button variant="destructive" className="self-start" disabled={busy} onClick={() => void handleSignOut()}>
+    <Group title={t("account")} footer={user.email ? t("signedInAs", { email: user.email }) : undefined}>
+      <GroupRowButton tone="destructive" disabled={busy} onClick={() => void handleSignOut()}>
         {t("signOut")}
-      </Button>
-    </Section>
+      </GroupRowButton>
+    </Group>
   );
 }

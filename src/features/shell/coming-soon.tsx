@@ -1,10 +1,15 @@
 import type { LucideIcon } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 export function ComingSoon({ Icon, text }: { Icon: LucideIcon; text: string }) {
   return (
-    <div className="mx-4 mt-6 flex flex-col items-start gap-3 rounded-xl border border-dashed p-6 text-muted-foreground">
-      <Icon className="size-8" strokeWidth={1.6} />
-      <p>{text}</p>
+    <div className="px-4 pt-2">
+      <Card className="flex flex-col items-start gap-3">
+        <span className="flex size-11 items-center justify-center rounded-concentric bg-planned/12 text-planned">
+          <Icon className="size-6" strokeWidth={1.9} />
+        </span>
+        <p className="text-callout text-muted-foreground">{text}</p>
+      </Card>
     </div>
   );
 }

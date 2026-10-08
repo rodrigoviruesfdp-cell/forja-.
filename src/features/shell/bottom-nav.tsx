@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarDays, ChartLine, Dumbbell, ListChecks, UsersRound } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "use-intl";
@@ -18,6 +19,11 @@ function matches(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
+/**
+ * Floating capsule tab bar (iOS 26 style): translucent material, hairline rim, soft shadow.
+ * The selected tab sits on a lens that springs from tab to tab. Bar: 32px radius with 6px
+ * padding, so the 52px items use 26px (concentric capsules).
+ */
 export function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -25,9 +31,10 @@ export function BottomNav() {
   return (
     <nav
       aria-label={t("label")}
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-safe backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      data-nav-tabs=""
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),12px)]"
     >
-      <ul className="mx-auto flex max-w-lg">
+      <ul className="material pointer-events-auto mx-auto flex max-w-md rounded-full border p-1.5 shadow-float">
         {ITEMS.map(({ href, key, Icon, also }) => {
           const active = [href, ...also].some((prefix) => matches(pathname, prefix));
           return (
@@ -36,19 +43,17 @@ export function BottomNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
+                  "relative flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-full text-caption-2 font-semibold",
                   active ? "text-foreground" : "text-muted-foreground",
                 )}
               >
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute top-0 h-[3px] w-8 rounded-b-full bg-primary transition-opacity",
-                    active ? "opacity-100" : "opacity-0",
-                  )}
-                />
-                <Icon className="size-6" strokeWidth={active ? 2.4 : 1.8} />
-                {t(key)}
+                {active ? (
+                  <motion.span layoutId="tab-lens" aria-hidden className="absolute inset-0 rounded-full bg-surface-2" />
+                ) : null}
+                <motion.span className="relative" whileTap={{ scale: 0.86 }}>
+                  <Icon className="size-[22px]" strokeWidth={active ? 2.3 : 1.9} />
+                </motion.span>
+                <span className="relative">{t(key)}</span>
               </Link>
             </li>
           );

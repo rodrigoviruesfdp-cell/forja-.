@@ -2,8 +2,7 @@
 
 import { Check } from "lucide-react";
 import { useTranslations } from "use-intl";
-import { Sheet } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
+import { Drawer } from "@/components/ui/drawer";
 
 interface FilterSheetProps {
   open: boolean;
@@ -15,7 +14,7 @@ interface FilterSheetProps {
   onSelect: (value: string | null) => void;
 }
 
-/** Single-choice list in a bottom sheet; picking an option applies it and closes the sheet. */
+/** Single-choice list in a bottom sheet (iOS checkmark list); picking applies it and closes. */
 export function FilterSheet({ open, onOpenChange, title, options, value, label, onSelect }: FilterSheetProps) {
   const t = useTranslations("exercises.filters");
   const common = useTranslations("common");
@@ -26,28 +25,26 @@ export function FilterSheet({ open, onOpenChange, title, options, value, label, 
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} title={title} closeLabel={common("cancel")}>
-      <ul className="grid grid-cols-2 gap-2">
+    <Drawer open={open} onOpenChange={onOpenChange} title={title} closeLabel={common("cancel")}>
+      {/* 28px sheet - 16px padding = 12px list corners. */}
+      <ul className="overflow-hidden rounded-[12px] bg-surface">
         {[null, ...options].map((option) => {
           const selected = option === value;
           return (
-            <li key={option ?? "any"}>
+            <li key={option ?? "any"} className="relative after:absolute after:right-0 after:bottom-0 after:left-4 after:h-px after:origin-bottom after:scale-y-50 after:bg-separator last:after:hidden">
               <button
                 type="button"
                 aria-pressed={selected}
                 onClick={() => pick(option)}
-                className={cn(
-                  "flex h-12 w-full items-center justify-between gap-2 rounded-md border px-3 text-left text-sm font-medium",
-                  selected ? "border-primary bg-primary/10" : "border-input bg-background",
-                )}
+                className="flex h-12 w-full cursor-pointer items-center justify-between gap-2 px-4 text-left active:bg-surface-2"
               >
                 <span className="truncate">{option ? label(option) : t("any")}</span>
-                {selected ? <Check className="size-4 shrink-0 text-primary" /> : null}
+                {selected ? <Check className="size-5 shrink-0 text-planned" strokeWidth={2.6} /> : null}
               </button>
             </li>
           );
         })}
       </ul>
-    </Sheet>
+    </Drawer>
   );
 }

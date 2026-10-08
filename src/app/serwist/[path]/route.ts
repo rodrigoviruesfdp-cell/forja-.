@@ -12,6 +12,7 @@ const APP_SHELL_PAGES = [
   "/today",
   "/calendar",
   "/routines",
+  "/routines/edit",
   "/exercises",
   "/exercises/detail",
   "/exercises/edit",
@@ -27,8 +28,6 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   additionalPrecacheEntries: APP_SHELL_PAGES.map((url) => ({ url, revision })),
   globPatterns: [
     ".next/static/**/*.{js,css,html,ico,png,svg,webp,json,webmanifest}",
-    // Fonts too, so the very first offline launch already looks right (Vietnamese subset excluded).
-    ".next/static/**/archivo-latin*.woff2",
     "public/**/*",
   ],
   useNativeEsbuild: true,

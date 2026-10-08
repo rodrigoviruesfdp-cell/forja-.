@@ -13,14 +13,14 @@ export function InitialSyncGate({ children }: { children: ReactNode }) {
   if (status.initialSyncDone) return children;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-4 px-6">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-5 px-6">
       <Wordmark />
       <div className="flex items-center gap-3">
-        <Spinner />
-        <h1 className="heading text-2xl">{t("title")}</h1>
+        <Spinner className="size-6" />
+        <h1 className="text-title-2">{t("title")}</h1>
       </div>
       <p className="text-muted-foreground">{status.phase === "offline" ? t("offline") : t("body")}</p>
-      {status.phase === "error" && status.error ? <p className="text-sm text-destructive">{status.error}</p> : null}
+      {status.phase === "error" && status.error ? <p className="text-footnote text-destructive">{status.error}</p> : null}
     </main>
   );
 }

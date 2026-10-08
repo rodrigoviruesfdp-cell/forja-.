@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 
-/** App name set in the condensed heavy cut used for numbers: the brand is the type. */
+/** App mark: the yellow plate (the one accent color) next to the name in SF Pro Rounded. */
 export function Wordmark({ className }: { className?: string }) {
   return (
-    <span className={cn("heading inline-flex items-baseline gap-1.5 text-3xl", className)}>
-      <span aria-hidden className="inline-block size-[0.55em] translate-y-[-0.05em] rounded-[3px] bg-primary" />
+    <span className={cn("inline-flex items-center gap-2 font-rounded text-title-1", className)}>
+      <span aria-hidden className="inline-block size-[0.78em] rounded-[0.24em] bg-primary shadow-[inset_0_-2px_0_rgb(0_0_0/0.12)]" />
       Forja
     </span>
   );

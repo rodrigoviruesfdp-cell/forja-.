@@ -1,47 +1,39 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Stagger, StaggerItem } from "@/components/motion/stagger";
+import { Card } from "@/components/ui/card";
+import { Group, GroupRow, GroupRowButton } from "@/components/ui/group";
+import { IconLink } from "@/components/ui/icon-button";
 import { Spinner } from "@/components/ui/spinner";
+import { saveRows } from "@/data/local/mutations";
 import { deleteCustomExercise } from "@/data/repositories/exercises";
 import { exerciseDisplayName } from "@/domain/exercises/names";
 import { usePrefs } from "@/features/preferences/prefs";
+import { setNavDirection } from "@/features/shell/nav-direction";
 import { PageHeader } from "@/features/shell/page-header";
 import { useUserData } from "@/features/user-data/user-data-context";
 import { ExerciseMotion } from "./exercise-motion";
 import { useCatalogNames, useExercise } from "./use-exercises";
 import { useExerciseLabels } from "./use-exercise-labels";
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+function FactRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="flex flex-wrap gap-1.5">{children}</dd>
-    </div>
-  );
-}
-
-function Tag({ children, strong = false }: { children: ReactNode; strong?: boolean }) {
-  return (
-    <span
-      className={
-        strong
-          ? "rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
-          : "rounded-full bg-surface-2 px-3 py-1 text-sm"
-      }
-    >
-      {children}
-    </span>
+    <GroupRow className="justify-between">
+      <span>{label}</span>
+      <span className="text-right text-muted-foreground">{children}</span>
+    </GroupRow>
   );
 }
 
 export function ExerciseDetail() {
   const t = useTranslations("exercises.detail");
   const tExercises = useTranslations("exercises");
+  const common = useTranslations("common");
   const router = useRouter();
   const id = useSearchParams().get("id");
   const exercise = useExercise(id);
@@ -62,7 +54,7 @@ export function ExerciseDetail() {
     return (
       <>
         <PageHeader title={tExercises("title")} backFallback="/exercises" />
-        <p className="px-4 pt-6 text-muted-foreground">{t("notFound")}</p>
+        <p className="px-4 pt-2 text-muted-foreground">{t("notFound")}</p>
       </>
     );
   }
@@ -72,92 +64,92 @@ export function ExerciseDetail() {
   const isOwn = exercise.created_by === user.id;
 
   async function handleDelete() {
-    if (!exercise || !window.confirm(t("deleteConfirm", { name }))) return;
+    if (!exercise) return;
+    const before = exercise;
     await deleteCustomExercise(db, user.id, exercise);
+    // Soft delete: undo just writes the previous version back.
+    toast(t("deleted", { name }), {
+      action: { label: common("undo"), onClick: () => void saveRows(db, "exercises", [{ ...before, deleted_at: null }]) },
+    });
+    setNavDirection("back");
     router.replace("/exercises");
   }
 
   return (
     <>
-      <PageHeader title={tExercises("title")} backFallback="/exercises" />
-      <article className="flex flex-col gap-6 px-4 pt-2 pb-10">
-        {exercise.image_urls.length > 0 ? (
-          <ExerciseMotion urls={exercise.image_urls} alt={(step) => t("imageAlt", { name, step })} />
+      <PageHeader
+        title={name}
+        subtitle={labels.muscle(exercise.primary_muscle)}
+        backFallback="/exercises"
+        actions={
+          isOwn ? (
+            <IconLink href={`/exercises/edit?id=${exercise.id}`} aria-label={t("edit")}>
+              <Pencil strokeWidth={2.2} className="size-5!" />
+            </IconLink>
+          ) : null
+        }
+      />
+      <Stagger className="flex flex-col gap-6 px-4 pb-8">
+        {name !== exercise.name ? (
+          <StaggerItem>
+            <p className="-mt-3 text-subhead text-muted-foreground">{t("originalName", { name: exercise.name })}</p>
+          </StaggerItem>
         ) : null}
 
-        <div className="flex flex-col gap-1">
-          <h2 className="heading text-3xl">{name}</h2>
-          {name !== exercise.name ? (
-            <p className="text-sm text-muted-foreground">{t("originalName", { name: exercise.name })}</p>
-          ) : null}
-        </div>
+        {exercise.image_urls.length > 0 ? (
+          <StaggerItem>
+            <Card size="tile">
+              <ExerciseMotion urls={exercise.image_urls} alt={(step) => t("imageAlt", { name, step })} />
+            </Card>
+          </StaggerItem>
+        ) : null}
 
-        <dl className="grid gap-4">
-          <Fact label={t("primary")}>
-            <Tag strong>{labels.muscle(exercise.primary_muscle)}</Tag>
-          </Fact>
-          {exercise.secondary_muscles.length > 0 ? (
-            <Fact label={t("secondary")}>
-              {exercise.secondary_muscles.map((muscle) => (
-                <Tag key={muscle}>{labels.muscle(muscle)}</Tag>
-              ))}
-            </Fact>
-          ) : null}
-          <div className="grid grid-cols-2 gap-4">
-            {exercise.equipment ? (
-              <Fact label={t("equipment")}>
-                <Tag>{labels.equipment(exercise.equipment)}</Tag>
-              </Fact>
+        <StaggerItem>
+          <Group>
+            <FactRow label={t("primary")}>{labels.muscle(exercise.primary_muscle)}</FactRow>
+            {exercise.secondary_muscles.length > 0 ? (
+              <FactRow label={t("secondary")}>
+                {exercise.secondary_muscles.map((muscle) => labels.muscle(muscle)).join(", ")}
+              </FactRow>
             ) : null}
-            {exercise.category ? (
-              <Fact label={t("category")}>
-                <Tag>{labels.category(exercise.category)}</Tag>
-              </Fact>
-            ) : null}
-            {exercise.mechanic ? (
-              <Fact label={t("mechanic")}>
-                <Tag>{labels.mechanic(exercise.mechanic)}</Tag>
-              </Fact>
-            ) : null}
-          </div>
-        </dl>
+            {exercise.equipment ? <FactRow label={t("equipment")}>{labels.equipment(exercise.equipment)}</FactRow> : null}
+            {exercise.category ? <FactRow label={t("category")}>{labels.category(exercise.category)}</FactRow> : null}
+            {exercise.mechanic ? <FactRow label={t("mechanic")}>{labels.mechanic(exercise.mechanic)}</FactRow> : null}
+          </Group>
+        </StaggerItem>
 
-        <section className="flex flex-col gap-3">
-          <h3 className="heading text-xl">{t("instructions")}</h3>
-          {!isCustom && locale !== "en" ? (
-            <p className="text-sm text-muted-foreground">{t("instructionsInEnglish")}</p>
-          ) : null}
-          {exercise.instructions.length > 0 ? (
-            <ol className="flex flex-col gap-3">
-              {exercise.instructions.map((step, index) => (
-                <li key={index} className="flex gap-3">
-                  <span className="numeric mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-2 text-sm">
+        <StaggerItem>
+          <Group
+            title={t("instructions")}
+            footer={!isCustom && locale !== "en" ? t("instructionsInEnglish") : undefined}
+          >
+            {exercise.instructions.length > 0 ? (
+              exercise.instructions.map((step, index) => (
+                <GroupRow key={index} className="items-start gap-3.5 py-3 [--sep-inset:3.25rem]">
+                  <span className="numeric flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-footnote">
                     {index + 1}
                   </span>
-                  <p className="leading-relaxed">{step}</p>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="text-muted-foreground">{t("noInstructions")}</p>
-          )}
-        </section>
+                  <p className="text-callout leading-relaxed">{step}</p>
+                </GroupRow>
+              ))
+            ) : (
+              <GroupRow className="text-muted-foreground">{t("noInstructions")}</GroupRow>
+            )}
+          </Group>
+        </StaggerItem>
 
-        {isOwn ? (
-          <div className="flex gap-3">
-            <Link href={`/exercises/edit?id=${exercise.id}`} className={buttonVariants({ variant: "secondary", className: "flex-1" })}>
-              <Pencil />
-              {t("edit")}
-            </Link>
-            <Button variant="destructive" className="flex-1" onClick={() => void handleDelete()}>
-              <Trash2 />
-              {t("delete")}
-            </Button>
-          </div>
-        ) : (
-          <p className="text-xs text-muted-foreground">{t("source")}</p>
-        )}
-      </article>
+        <StaggerItem>
+          {isOwn ? (
+            <Group>
+              <GroupRowButton tone="destructive" onClick={() => void handleDelete()}>
+                {t("delete")}
+              </GroupRowButton>
+            </Group>
+          ) : (
+            <p className="px-4 text-caption text-tertiary-foreground">{t("source")}</p>
+          )}
+        </StaggerItem>
+      </Stagger>
     </>
   );
 }

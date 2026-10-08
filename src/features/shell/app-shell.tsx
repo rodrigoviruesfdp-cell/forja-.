@@ -1,13 +1,21 @@
 import type { ReactNode } from "react";
 import { BottomNav } from "./bottom-nav";
-import { UpdateBanner } from "./update-banner";
+import { NavDirectionTracker } from "./nav-direction";
+import { UpdateNotifier } from "./update-notifier";
 
+/**
+ * The page lives in the vaul wrapper (it scales back behind sheets, like iOS);
+ * the tab bar stays outside so it is never moved by that effect.
+ */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto min-h-dvh max-w-lg pt-safe">
-      <main className="pb-[calc(5rem+env(safe-area-inset-bottom))]">{children}</main>
-      <UpdateBanner />
+    <>
+      <NavDirectionTracker />
+      <div data-vaul-drawer-wrapper="" className="mx-auto min-h-dvh max-w-lg bg-background">
+        <main className="pb-[var(--tabbar-space)]">{children}</main>
+      </div>
+      <UpdateNotifier />
       <BottomNav />
-    </div>
+    </>
   );
 }

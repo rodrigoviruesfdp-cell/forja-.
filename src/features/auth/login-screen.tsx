@@ -1,6 +1,7 @@
 "use client";
 
 import type { AuthError } from "@supabase/supabase-js";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { useTranslations } from "use-intl";
@@ -132,7 +133,7 @@ export function LoginScreen() {
       <div className="flex items-center justify-between py-4">
         <Wordmark />
         <SegmentedControl<Locale>
-          className="h-11 w-28"
+          className="w-28"
           aria-label="Idioma / Language"
           value={locale}
           options={languageOptions}
@@ -140,11 +141,16 @@ export function LoginScreen() {
         />
       </div>
 
-      <div className="flex flex-1 flex-col justify-center gap-8 pb-16">
+      <motion.div
+        key={step}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-1 flex-col justify-center gap-8 pb-16"
+      >
         {step === "code" ? (
           <form onSubmit={verifyCode} className="flex flex-col gap-6" noValidate>
             <div className="flex flex-col gap-2">
-              <h1 className="heading text-3xl">{t("codeSentTitle")}</h1>
+              <h1 className="text-large-title">{t("codeSentTitle")}</h1>
               <p className="text-muted-foreground">{t("codeSentBody", { email: email.trim() })}</p>
             </div>
             <Field label={t("codeLabel")} htmlFor="code" error={errorText}>
@@ -157,11 +163,11 @@ export function LoginScreen() {
                 pattern="[0-9]*"
                 autoFocus
                 aria-invalid={Boolean(error)}
-                className="numeric h-16 text-center text-3xl tracking-[0.3em]"
+                className="numeric h-16 text-center text-title-1 tracking-[0.3em]"
                 placeholder="······"
               />
             </Field>
-            <Button type="submit" size="lg" disabled={busy}>
+            <Button type="submit" size="lg" className="w-full" disabled={busy}>
               {busy ? t("verifying") : t("signIn")}
             </Button>
             <div className="flex flex-wrap justify-between gap-2">
@@ -180,7 +186,7 @@ export function LoginScreen() {
             noValidate
           >
             <div className="flex flex-col gap-2">
-              <h1 className="heading text-3xl">{t("title")}</h1>
+              <h1 className="text-large-title text-balance">{t("title")}</h1>
               {step === "email" ? <p className="text-muted-foreground">{t("subtitle")}</p> : null}
             </div>
             <Field label={t("emailLabel")} htmlFor="email" error={step === "email" ? errorText : undefined}>
@@ -208,7 +214,7 @@ export function LoginScreen() {
                 />
               </Field>
             ) : null}
-            <Button type="submit" size="lg" disabled={busy}>
+            <Button type="submit" size="lg" className="w-full" disabled={busy}>
               {step === "password" ? (busy ? t("verifying") : t("signIn")) : busy ? t("sending") : t("sendCode")}
             </Button>
             <Button
@@ -221,7 +227,7 @@ export function LoginScreen() {
             </Button>
           </form>
         )}
-      </div>
+      </motion.div>
     </main>
   );
 }

@@ -1,30 +1,35 @@
 "use client";
 
 import { useSerwist } from "@serwist/turbopack/react";
-import { RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { Button } from "@/components/ui/button";
 import { UPDATE_UI_MARKER } from "@/service-worker/update-marker";
 
 const CHECK_EVERY_MS = 15 * 60 * 1000;
+const TOAST_ID = "app-update";
 
 /**
- * A new deploy downloads in the background and waits. The user decides when to switch,
+ * A new deploy downloads in the background and waits. A notification offers the switch,
  * so the app never reloads in the middle of a workout.
  */
-export function UpdateBanner() {
+export function UpdateNotifier() {
   const t = useTranslations("update");
   const { serwist } = useSerwist();
-  const [waiting, setWaiting] = useState(false);
 
   useEffect(() => {
     if (!serwist) return;
-    // Tells the next versions that this device can show the banner, so they wait for the tap.
+    // Tells the next versions that this device can show the notice, so they wait for the tap.
     void globalThis.caches?.open(UPDATE_UI_MARKER).catch(() => null);
-    const onWaiting = () => setWaiting(true);
+
+    const announce = () =>
+      toast(t("available"), {
+        id: TOAST_ID,
+        duration: Number.POSITIVE_INFINITY,
+        action: { label: t("action"), onClick: () => serwist.messageSkipWaiting() },
+      });
     const onControlling = () => window.location.reload();
-    serwist.addEventListener("waiting", onWaiting);
+    serwist.addEventListener("waiting", announce);
     serwist.addEventListener("controlling", onControlling);
 
     // Look for new versions when the app comes back to the foreground.
@@ -38,30 +43,15 @@ export function UpdateBanner() {
 
     // A version may already be waiting from a previous visit.
     void navigator.serviceWorker?.getRegistration().then((registration) => {
-      if (registration?.waiting && navigator.serviceWorker.controller) setWaiting(true);
+      if (registration?.waiting && navigator.serviceWorker.controller) announce();
     });
 
     return () => {
-      serwist.removeEventListener("waiting", onWaiting);
+      serwist.removeEventListener("waiting", announce);
       serwist.removeEventListener("controlling", onControlling);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [serwist]);
+  }, [serwist, t]);
 
-  if (!waiting) return null;
-
-  return (
-    <div
-      role="status"
-      className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-lg items-center justify-between gap-3 border-t bg-surface px-4 py-2"
-    >
-      <span className="flex items-center gap-2 text-sm font-medium">
-        <RefreshCw aria-hidden className="size-4 text-primary" />
-        {t("available")}
-      </span>
-      <Button size="sm" onClick={() => serwist?.messageSkipWaiting()}>
-        {t("action")}
-      </Button>
-    </div>
-  );
+  return null;
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import type { EmailOtpType } from "@supabase/supabase-js";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "use-intl";
-import { buttonVariants } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { getSupabase } from "@/data/supabase/client";
 import { Wordmark } from "@/features/shell/wordmark";
@@ -65,15 +64,15 @@ export function ConfirmScreen() {
       <Wordmark />
       {failed ? (
         <>
-          <p className="text-lg">{t("failed")}</p>
-          <Link href="/login" className={buttonVariants({ size: "lg" })}>
+          <p className="text-title-3">{t("failed")}</p>
+          <ButtonLink href="/login" size="lg" className="w-full">
             {t("backToLogin")}
-          </Link>
+          </ButtonLink>
         </>
       ) : (
         <div className="flex items-center gap-3">
           <Spinner />
-          <p className="text-lg">{t("verifying")}</p>
+          <p className="text-title-3">{t("verifying")}</p>
         </div>
       )}
     </main>

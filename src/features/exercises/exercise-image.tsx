@@ -17,8 +17,8 @@ export function ExerciseImage({ src, alt, className, eager = false }: ExerciseIm
 
   if (!src || failed) {
     return (
-      <div aria-hidden className={cn("flex items-center justify-center bg-surface-2 text-muted-foreground", className)}>
-        <Dumbbell className="size-1/3" strokeWidth={1.6} />
+      <div aria-hidden className={cn("flex items-center justify-center bg-surface-2 text-tertiary-foreground", className)}>
+        <Dumbbell className="size-1/3" strokeWidth={1.8} />
       </div>
     );
   }

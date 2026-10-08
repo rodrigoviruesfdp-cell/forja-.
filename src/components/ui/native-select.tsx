@@ -1,6 +1,7 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
+import { fieldClass } from "./input";
 
 /** Native <select>: on phones it opens the system picker, which is the fastest option one-handed. */
 export function NativeSelect({ className, children, ...props }: ComponentProps<"select">) {
@@ -8,18 +9,14 @@ export function NativeSelect({ className, children, ...props }: ComponentProps<"
     <div className="relative">
       <select
         data-slot="native-select"
-        className={cn(
-          "h-12 w-full appearance-none rounded-md border border-input bg-surface pr-10 pl-4 text-base text-foreground",
-          "focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-          className,
-        )}
+        className={cn(fieldClass, "h-12 cursor-pointer appearance-none pr-10", className)}
         {...props}
       >
         {children}
       </select>
-      <ChevronDown
+      <ChevronsUpDown
         aria-hidden
-        className="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-muted-foreground"
+        className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-tertiary-foreground"
       />
     </div>
   );

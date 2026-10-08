@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "use-intl";
-import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Group, GroupRow } from "@/components/ui/group";
 import { normalizeUsername } from "@/data/repositories/profiles";
 import { type Profile, USERNAME_PATTERN } from "@/domain/schemas";
 import { useUpdateProfile } from "../use-profile";
-import { Section } from "./section";
 
 export function CommunitySection({ profile }: { profile: Profile }) {
   const t = useTranslations("profile");
@@ -31,29 +29,42 @@ export function CommunitySection({ profile }: { profile: Profile }) {
   }
 
   return (
-    <Section id="community" title={t("community")}>
-      <Field label={t("username")} htmlFor="username" hint={t("usernameHint")} error={invalid ? t("usernameInvalid") : undefined}>
-        <div className="relative">
-          <span aria-hidden className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground">
-            @
+    <Group
+      id="community"
+      title={t("community")}
+      footer={
+        invalid ? (
+          <span role="alert" className="text-destructive">
+            {t("usernameInvalid")}
           </span>
-          <Input
-            id="username"
-            key={current ?? ""}
-            defaultValue={current ?? ""}
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            maxLength={31}
-            aria-invalid={invalid}
-            className="pl-9"
-            onBlur={(e) => save(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") e.currentTarget.blur();
-            }}
-          />
-        </div>
-      </Field>
-    </Section>
+        ) : (
+          t("usernameHint")
+        )
+      }
+    >
+      <GroupRow className="py-0">
+        <label htmlFor="username" className="w-32 shrink-0">
+          {t("username")}
+        </label>
+        <span aria-hidden className="ml-auto text-tertiary-foreground">
+          @
+        </span>
+        <input
+          id="username"
+          key={current ?? ""}
+          defaultValue={current ?? ""}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={31}
+          aria-invalid={invalid}
+          className="h-12 w-36 min-w-0 bg-transparent text-body text-muted-foreground outline-none placeholder:text-tertiary-foreground focus:text-foreground aria-invalid:text-destructive"
+          onBlur={(e) => save(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
+        />
+      </GroupRow>
+    </Group>
   );
 }

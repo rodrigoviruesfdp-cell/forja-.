@@ -1,13 +1,21 @@
 "use client";
 
 import { useTranslations } from "use-intl";
-import { Field } from "@/components/ui/field";
+import { Group, GroupRow } from "@/components/ui/group";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { WEIGHT_UNITS, type WeightUnit } from "@/domain/units";
 import { setPrefs, type Theme, THEMES, usePrefs } from "@/features/preferences/prefs";
 import { LOCALE_NAMES, LOCALES, type Locale } from "@/i18n/config";
-import { Section } from "./section";
 import { useUpdateProfile } from "../use-profile";
+
+function PrefRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <GroupRow className="flex-col items-stretch gap-2 py-3">
+      <span className="text-subhead text-muted-foreground">{label}</span>
+      {children}
+    </GroupRow>
+  );
+}
 
 export function PreferencesSection() {
   const t = useTranslations("profile");
@@ -21,31 +29,31 @@ export function PreferencesSection() {
   };
 
   return (
-    <Section title={t("preferences")}>
-      <Field label={t("language")}>
+    <Group title={t("preferences")}>
+      <PrefRow label={t("language")}>
         <SegmentedControl<Locale>
           aria-label={t("language")}
           value={prefs.locale}
           options={LOCALES.map((value) => ({ value, label: LOCALE_NAMES[value] }))}
           onValueChange={(locale) => void updateProfile({ locale })}
         />
-      </Field>
-      <Field label={t("units")}>
+      </PrefRow>
+      <PrefRow label={t("units")}>
         <SegmentedControl<WeightUnit>
           aria-label={t("units")}
           value={prefs.units}
           options={WEIGHT_UNITS.map((value) => ({ value, label: value }))}
           onValueChange={(units) => void updateProfile({ units })}
         />
-      </Field>
-      <Field label={t("theme")}>
+      </PrefRow>
+      <PrefRow label={t("theme")}>
         <SegmentedControl<Theme>
           aria-label={t("theme")}
           value={prefs.theme}
           options={THEMES.map((value) => ({ value, label: themeLabels[value] }))}
           onValueChange={(theme) => setPrefs({ theme })}
         />
-      </Field>
-    </Section>
+      </PrefRow>
+    </Group>
   );
 }

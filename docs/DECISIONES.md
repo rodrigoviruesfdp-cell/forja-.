@@ -8,8 +8,8 @@ Documento vivo: se actualiza en cada entrega.
 |---|---|---|
 | 1.1 | Cimientos: app instalable, login, perfil, idioma, unidades, base de datos completa con RLS, sincronización sin conexión | ✅ Hecha |
 | 1.2 | Catálogo de ejercicios (free-exercise-db traducido), buscador con filtros, ejercicios propios; base de la Comunidad | ✅ Hecha |
-| 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas | Siguiente |
-| 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR | |
+| 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas. Además: rediseño al estilo iOS | ✅ Hecha |
+| 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR | Siguiente |
 | 1.5 | Otros deportes y calendario mensual con estados y racha | |
 | 1.6 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
 | 1.7 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | |
@@ -27,7 +27,8 @@ Documento vivo: se actualiza en cada entrega.
 - **Una base de datos local por usuario** (`forja-<id>`): dos cuentas en el mismo móvil nunca se mezclan. Al cerrar sesión se borra la del usuario.
 - **Páginas como "carcasa" estática + datos en el cliente.** El service worker (Serwist) precachea todas las pantallas, así que la app abre sin red. La seguridad no depende del front: la garantiza RLS en Postgres.
 - **Sin servidor propio en la Fase 1.** Todo habla con Supabase directamente desde el móvil (con RLS). Las rutas de servidor se usarán para el coach IA en la Fase 2, para no exponer la clave de Anthropic.
-- **Next.js 16** (Turbopack), **Tailwind 4**, componentes al estilo shadcn/ui escritos a mano sobre Radix (el registro de shadcn no estaba accesible desde el entorno de construcción), **Zod 4**, **Vitest**, **use-intl** para los textos.
+- **Next.js 16** (Turbopack), **Tailwind 4**, componentes propios al estilo iOS sobre Radix (el registro de shadcn no estaba accesible desde el entorno de construcción), **Zod 4**, **Vitest**, **use-intl** para los textos.
+- **Motion** (antes Framer Motion) para animaciones y arrastrar, **vaul** para las hojas inferiores y **sonner** para los avisos. Se descartó **dnd-kit** (previsto en el documento original): `Reorder` de Motion hace lo mismo con la física de muelle del resto de la app y una dependencia menos.
 
 ### Login
 
@@ -132,23 +133,65 @@ Documento vivo: se actualiza en cada entrega.
   - de momento solo se reserva el `username` y se añaden `bio`, `avatar_url` e `is_private` (privado por defecto) a `profiles`;
   - las tablas sociales se crearán al construirlo.
 
+### Rutinas (1.3)
+
+- **Sin cambios en la base de datos:** las tablas de rutinas ya estaban desde la 1.1.
+- **Lógica pura en `src/domain/routines`** (con tests), separada de las pantallas.
+  - **Reglas** (`builder.ts`): crear, duplicar, mover, reordenar y validar contra los límites de la base de datos.
+  - **Cambio semanal ↔ rotación:** al pasar a rotación, los días de gimnasio conservan su orden y sus días de la semana pasan a "días que sueles entrenar". Al volver a semanal, se reparten en esos días y los que sobran quedan en "Sin día asignado".
+  - **Plan del día** (`plan.ts`): qué toca hoy y qué viene después.
+  - **Plantillas** (`templates.ts`): "A/B/C/D + deporte" (tu forma de entrenar) y "Full body 3 días", con ejercicios reales del catálogo. Un test comprueba que todos existen.
+- **Rotación:** toca el día siguiente al último **completado** (las sesiones llegan en la 1.4; hasta entonces es el A). Los días de gimnasio no tienen día de la semana; los deportes pueden fijarse a uno. Con "días que sueles entrenar" vacío, cualquier día vale.
+- **Semanal:** cada día tiene su día de la semana; puede haber dos el mismo día (gimnasio + deporte).
+- **Repeticiones:** fijas (5) o rango para doble progresión (8–12). Subir el mínimo por encima del máximo arrastra el máximo, y al revés.
+- **Escrituras atómicas:** `saveChanges` guarda varias tablas en una sola transacción (rutina + días + ejercicios + perfil), con su cola de subida.
+- **Deshacer:** borrar es un borrado suave. Deshacer reescribe la versión anterior de las filas.
+- **Arrastrar:** solo desde el asa ⠿, para no bloquear el scroll. Se guarda al soltar, no en cada hueco. Para mover un ejercicio a otro día se usa **Mover a otro día**: arrastrar entre días en un móvil, con la página desplazándose, falla demasiado. Por accesibilidad, **Subir/Bajar** hacen lo mismo que arrastrar.
+- **La primera rutina que creas pasa a ser la activa.** Al borrar la activa, no queda ninguna activa.
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
 - **Vercel:** proyecto `forja` conectado al repositorio de GitHub. Cada `push` publica sola la app en <https://forja-gilt-six.vercel.app>. Las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ya están configuradas.
 
-### Diseño visual
+### Diseño visual (desde la 1.3, según las Human Interface Guidelines de Apple)
 
-- Superficies grafito (como el suelo de goma del gimnasio) y texto color tiza.
-- Los colores siguen el código de los discos de competición y siempre significan algo: **amarillo** = acción principal, **verde** = hecho, **rojo** = récord personal, **azul** = planificado.
-- Una sola familia tipográfica (**Archivo**) usando su eje de anchura: condensada y gruesa para números y títulos, normal para leer. Números tabulares.
-- Objetivos táctiles de 48 px (mínimo 44 px) y navegación inferior al alcance del pulgar.
+- **Fondos neutros:** `#F5F5F7` / negro, con tarjetas blancas / `#1C1C1E`.
+- **Materiales translúcidos** (desenfoque + saturación) en barras, menús, hojas y avisos:
+  - claro: blanco al 70 %;
+  - oscuro: negro al 60 %.
+- **Bordes finos** (negro al 6 % / blanco al 12 %) y **sombras amplias y suaves** (`0 8px 30px` al 6 %).
+- **Esquinas concéntricas:** radio interior = radio exterior − margen. Las tarjetas fijan ambos valores (`<Card size>`) y lo de dentro usa `rounded-concentric`. Las cápsulas (barra inferior, botones) lo cumplen por construcción.
+- **Tipografía del sistema:** SF Pro en Apple, con el espaciado de letras de iOS (solo en Apple); Roboto o Segoe en el resto. Escala de iOS: título grande 34, cuerpo 17, nota 13. Números en **SF Pro Rounded**, tabulares, como en la app Fitness.
+- **Textos secundarios:**
+  - `#6E6E73` en claro, porque `#86868B` no llega a 4,5:1 sobre blanco y en un gimnasio con mucha luz se lee mal;
+  - `#86868B` para pistas y textos de ayuda.
+- **Color:**
+  - el **amarillo** se usa solo en la acción principal de cada pantalla;
+  - **verde** = hecho / activo;
+  - **rojo** = récord o destructivo;
+  - **azul** = planificado y acciones en texto (como el tinte de iOS).
+  - Lo seleccionado (filtros, días) va en el color del texto, no en amarillo.
+- **Movimiento:** todo con muelle (`stiffness 350, damping 25, mass 0.8`) por defecto en `MotionConfig`.
+  - Al pulsar: escala 0,96, y 1,01 al pasar el ratón.
+  - Las listas entran escalonadas (0,04 s, 8 px).
+  - Con "Reducir movimiento" solo quedan fundidos.
+- **Navegación como en iOS:**
+  - **barra inferior flotante** con una lente que se desliza a la pestaña elegida;
+  - **título grande** que se recoge en la barra al hacer scroll;
+  - transiciones **push/pop** con View Transitions de React, con una curva de muelle sin rebote en CSS `linear()`;
+  - **hojas** con vaul: se arrastran y la pantalla de detrás se encoge;
+  - hojas de acción en lugar de `confirm()` y avisos con **Deshacer** en lugar de preguntar antes de borrar.
+- **Ajuste de vaul:** escala la página desde el principio del documento, y en una lista larga desplazaba lo que estás viendo. Se corrige con `transform-origin` en la parte visible y recortando esa zona con esquinas redondeadas.
+- Objetivos táctiles de 44 px como mínimo y navegación al alcance del pulgar.
 
 ## Pendiente / a vigilar
 
 - **Instrucciones de los ejercicios en español:** pendiente (876 textos). Los nombres ya están traducidos y se pueden revisar en `src/i18n/exercise-names/es.json`.
 - **Imágenes del catálogo en nuestro propio almacenamiento** (Supabase Storage) si jsDelivr da problemas.
-- **Datos de ejemplo:** llegarán con rutinas y sesiones (1.3–1.6), con un botón para cargarlos y otro para borrarlos.
+- **Datos de ejemplo:** las plantillas de rutina cubren la 1.3. Las sesiones de ejemplo (para ver gráficas) llegarán con la 1.6, con un botón para cargarlas y otro para borrarlas.
+- **Nombre de una rutina de plantilla:** se guarda en el idioma en el que se creó. Cambiar de idioma no la renombra.
+- **Transiciones entre pantallas:** el gesto "atrás" de Android y el botón Volver hacen la animación de volver. En iPhone, la app instalada no tiene gesto de deslizar para volver (limitación de las PWA en iOS).
 - **`body_metrics` y `goals`:** las tablas existen, pero no tienen pantallas en la Fase 1.
 - **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.

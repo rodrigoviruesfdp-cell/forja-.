@@ -1,13 +1,10 @@
 "use client";
 
 import { useTranslations } from "use-intl";
-import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-import { Textarea } from "@/components/ui/textarea";
+import { SelectRow, TextAreaRow, TextRow } from "@/components/ui/form-rows";
+import { Group } from "@/components/ui/group";
 import { cleanText } from "@/data/repositories/profiles";
 import { GOALS, LEVELS, type Profile } from "@/domain/schemas";
-import { Section } from "./section";
 import { useUpdateProfile } from "../use-profile";
 
 type Goal = (typeof GOALS)[number];
@@ -19,24 +16,29 @@ export function TrainingSection({ profile }: { profile: Profile }) {
   const updateProfile = useUpdateProfile();
 
   return (
-    <Section title={t("training")} hint={t("trainingHint")}>
-      <Field label={t("name")} htmlFor="display_name">
+    <>
+      <Group title={t("training")} footer={t("trainingHint")}>
         {/* Uncontrolled + key: re-mounts if the value changes on another device. Saved on blur. */}
-        <Input
+        <TextRow
           id="display_name"
+          label={t("name")}
           key={profile.display_name ?? ""}
           defaultValue={profile.display_name ?? ""}
+          placeholder={common("notSet")}
           autoComplete="given-name"
           maxLength={80}
           onBlur={(e) => {
             const value = cleanText(e.target.value, 80);
             if (value !== profile.display_name) void updateProfile({ display_name: value });
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
         />
-      </Field>
-      <Field label={t("goal")} htmlFor="goal">
-        <NativeSelect
+        <SelectRow
           id="goal"
+          label={t("goal")}
+          valueLabel={profile.goal ? t(`goals.${profile.goal}`) : common("notSet")}
           value={profile.goal ?? ""}
           onChange={(e) => void updateProfile({ goal: (e.target.value || null) as Goal | null })}
         >
@@ -46,11 +48,11 @@ export function TrainingSection({ profile }: { profile: Profile }) {
               {t(`goals.${goal}`)}
             </option>
           ))}
-        </NativeSelect>
-      </Field>
-      <Field label={t("level")} htmlFor="level">
-        <NativeSelect
+        </SelectRow>
+        <SelectRow
           id="level"
+          label={t("level")}
+          valueLabel={profile.level ? t(`levels.${profile.level}`) : common("notSet")}
           value={profile.level ?? ""}
           onChange={(e) => void updateProfile({ level: (e.target.value || null) as Level | null })}
         >
@@ -60,11 +62,12 @@ export function TrainingSection({ profile }: { profile: Profile }) {
               {t(`levels.${level}`)}
             </option>
           ))}
-        </NativeSelect>
-      </Field>
-      <Field label={t("injuries")} htmlFor="injury_notes">
-        <Textarea
+        </SelectRow>
+      </Group>
+      <Group title={t("injuries")}>
+        <TextAreaRow
           id="injury_notes"
+          aria-label={t("injuries")}
           key={profile.injury_notes ?? ""}
           defaultValue={profile.injury_notes ?? ""}
           placeholder={t("injuriesPlaceholder")}
@@ -74,7 +77,7 @@ export function TrainingSection({ profile }: { profile: Profile }) {
             if (value !== profile.injury_notes) void updateProfile({ injury_notes: value });
           }}
         />
-      </Field>
-    </Section>
+      </Group>
+    </>
   );
 }

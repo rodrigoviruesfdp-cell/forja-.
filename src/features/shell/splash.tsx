@@ -4,7 +4,7 @@ import { Wordmark } from "./wordmark";
 export function Splash() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background">
-      <Wordmark className="text-4xl opacity-90" />
+      <Wordmark className="text-large-title" />
     </div>
   );
 }

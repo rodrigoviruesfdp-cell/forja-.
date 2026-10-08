@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { resolveDark, usePrefs } from "./prefs";
 
-const THEME_COLORS = { dark: "#15171a", light: "#eceef1" } as const;
+const THEME_COLORS = { dark: "#000000", light: "#f5f5f7" } as const;
 
 /** Keeps <html> (dark class, lang) and the status bar color in line with the preferences. */
 export function PrefsEffects() {
