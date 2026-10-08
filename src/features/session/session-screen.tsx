@@ -1,7 +1,7 @@
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { CircleCheck, Ellipsis, Plus, Trash2, Trophy } from "lucide-react";
+import { CircleCheck, Ellipsis, Plus, Share, Trash2, Trophy } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -9,11 +9,11 @@ import { toast } from "sonner";
 import { useFormatter, useTranslations } from "use-intl";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { ActionList } from "@/components/ui/action-list";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useConfirm } from "@/components/ui/confirm";
 import { Drawer } from "@/components/ui/drawer";
-import { IconButton } from "@/components/ui/icon-button";
+import { IconButton, IconLink } from "@/components/ui/icon-button";
 import { Spinner } from "@/components/ui/spinner";
 import { useSticky } from "@/components/ui/use-sticky";
 import {
@@ -78,6 +78,7 @@ type Sheet =
 
 function SessionView({ tree }: { tree: SessionTree }) {
   const t = useTranslations("session");
+  const tShare = useTranslations("share");
   const tRoutines = useTranslations("routines");
   const common = useTranslations("common");
   const format = useFormatter();
@@ -165,9 +166,16 @@ function SessionView({ tree }: { tree: SessionTree }) {
         backFallback="/today"
         hideProfile
         actions={
-          <IconButton aria-label={t("sessionMenu")} onClick={() => setSheet({ type: "options" })}>
-            <Ellipsis />
-          </IconButton>
+          <>
+            {live ? null : (
+              <IconLink href={`/share?session=${session.id}`} data-nav="forward" aria-label={tShare("shareSession")}>
+                <Share />
+              </IconLink>
+            )}
+            <IconButton aria-label={t("sessionMenu")} onClick={() => setSheet({ type: "options" })}>
+              <Ellipsis />
+            </IconButton>
+          </>
         }
       />
 
@@ -227,7 +235,11 @@ function SessionView({ tree }: { tree: SessionTree }) {
         </StaggerItem>
 
         {live ? null : (
-          <StaggerItem>
+          <StaggerItem className="flex flex-col gap-2">
+            <ButtonLink href={`/share?session=${session.id}`} data-nav="forward" variant="secondary" className="w-full">
+              <Share />
+              {tShare("shareSession")}
+            </ButtonLink>
             <Button
               size="lg"
               className="w-full"

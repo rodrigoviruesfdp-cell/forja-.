@@ -14,6 +14,7 @@ const APP_SHELL_PAGES = [
   "/routines",
   "/routines/edit",
   "/session",
+  "/share",
   "/exercises",
   "/exercises/detail",
   "/exercises/edit",

@@ -6,13 +6,14 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.5.** Ya funcionan:
+> **Estado: entrega 1.6.** Ya funcionan:
 > - el login, el perfil y las preferencias;
 > - la sincronización sin conexión y la app instalable;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
 > - el **constructor de rutinas**: semanal o en rotación A/B/C/D, con deportes, y la pantalla **Hoy** que te dice qué toca;
 > - el **registro del entreno en vivo**: cada serie en uno a tres toques, lo que hiciste la última vez, calentamientos, récords y un resumen al terminar;
 > - los **deportes** (también de días pasados) con su spot y lo que cuentan (olas, asaltos, vías…), y el **calendario** con tu racha de semanas;
+> - **compartir en Instagram**: una imagen de tu sesión (con tu foto y los datos encima, o sobre fondo oscuro), una pegatina transparente y la imagen de tu rutina;
 > - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
@@ -180,6 +181,21 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
 
 ## 9. Cómo probar las entregas
 
+### Entrega 1.6: compartir en Instagram
+
+1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
+2. **Desde un deporte:** en **Hoy** toca un deporte hecho (por ejemplo, el surf) y, en su hoja, **Compartir**.
+3. **Desde un entreno de gimnasio:** al terminarlo, en el resumen, **Compartir** (o el icono de compartir arriba a la derecha; también desde el calendario, abriendo ese día).
+4. **Elige el estilo** arriba:
+   - **Foto:** elige una foto de tu carrete (o hazla en el momento). Los datos aparecen encima, abajo, como en Strava. **Cambiar foto** para probar otra.
+   - **Fondo:** los datos sobre un fondo oscuro con el amarillo de Forja.
+   - **Pegatina:** solo los datos, con el fondo transparente, para ponerlos encima de una historia que ya tengas.
+   - **Mostrar dónde** quita o pone el spot o lugar.
+5. **Compartir:** se abre el menú del móvil. Elige **Instagram → Historia**. Si Instagram no aparece, toca **Guardar imagen** y elígela desde el carrete al crear la historia.
+6. **Pegatina (experimental):** toca **Copiar pegatina**, abre una historia en Instagram con tu foto y pégala (mantén el dedo en la pantalla → **Pegar**, o el botón de pegatina). Si no se pega, **Guardar imagen** y añádela desde el carrete.
+7. **Tu rutina:** en **Rutinas**, abre una y toca **⋯** (arriba a la derecha) → **Compartir rutina**. La imagen lleva los días (letras A, B, C… o los días de la semana) y sus ejercicios.
+8. **Sin conexión:** todo funciona igual en modo avión. La imagen se hace en tu móvil: **tu foto no se sube a ningún sitio**.
+
 ### Entrega 1.5: deportes, spots y calendario
 
 1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
@@ -336,8 +352,8 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 ```
 src/
   app/            Rutas de Next.js: solo montan pantallas
-  features/       Pantallas y hooks por funcionalidad (auth, calendar, profile, routines, session, sports, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha… Sin React ni Supabase
+  features/       Pantallas y hooks por funcionalidad (auth, calendar, profile, routines, session, share, sports, shell…)
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)

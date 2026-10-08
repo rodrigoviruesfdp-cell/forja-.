@@ -11,8 +11,8 @@ Documento vivo: se actualiza en cada entrega.
 | 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas. Además: rediseño al estilo iOS | ✅ Hecha |
 | 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR. Además: **deporte como código fijo** y un único **"Terminar sesión"** con resumen | ✅ Hecha |
 | 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | ✅ Hecha |
-| 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | Siguiente |
-| 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | |
+| 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | ✅ Hecha |
+| 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | Siguiente |
 | 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
 | 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | |
 | 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | |
@@ -257,6 +257,34 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
   - se usa el objetivo actual para todas las semanas: cambiarlo recalcula también las pasadas.
 - **Color nuevo:** naranja de iOS (`--streak`) solo para la racha.
 
+### Compartir en Instagram (1.6)
+
+- **Todo se dibuja en el móvil** (un `canvas`): funciona sin conexión y la foto que eliges **no sale del móvil**; no hay nada nuevo en la base de datos ni en el servidor.
+- **Tres estilos para una sesión** (gimnasio o deporte):
+  - **Foto:** tu foto recortada a 9:16 (como `object-fit: cover`) con un degradado oscuro abajo y los datos encima, al estilo de Strava;
+  - **Fondo:** los mismos datos sobre fondo oscuro con un brillo amarillo de Forja;
+  - **Pegatina:** PNG transparente de 1080 × 720 con los datos y una sombra, para ponerla sobre otra historia.
+- **Qué datos lleva** (`shareStats`, en `src/domain/share.ts`): como mucho tres números y nunca un cero.
+  - Gimnasio: duración, volumen y series.
+  - Deporte: duración, lo que cuenta ese deporte (olas, asaltos, vías…), distancia y esfuerzo.
+  - Además: el título, la fecha, el spot (se puede ocultar) y, si hubo récords, una línea roja ("🏆 Récord en Press de banca" o "🏆 3 récords").
+- **Diseño:**
+  - tamaño de historia (1080 × 1920), sin texto en las franjas que tapa Instagram arriba (210 px) y abajo (280 px);
+  - letra del sistema, la misma que la app (en iPhone, SF Pro; los números en SF Pro Rounded);
+  - los textos largos se encogen hasta caber y, si no, se cortan con "…";
+  - todos los números van al mismo tamaño, el mayor que quepa, y cada columna mide lo que ocupa su contenido.
+- **Imagen de la rutina:**
+  - los días en orden: A, B, C… y luego los deportes en una rotación; de lunes a domingo en una semanal, con la inicial del día;
+  - los ejercicios de cada día van en una a tres líneas, según quepan (`routineLayout`), separados por "·", con "+3 más" si no caben todos;
+  - si ni siquiera caben los nombres de todos los días, la última línea dice cuántos faltan.
+- **Compartir:**
+  - usa el menú de compartir del móvil (Web Share con archivos), donde aparece Instagram → Historia;
+  - si el navegador no puede compartir archivos (ordenador), **Compartir** guarda la imagen;
+  - cerrar el menú sin elegir no es un error.
+- **Pegatina:** **Copiar pegatina** la deja en el portapapeles como PNG para pegarla en una historia. Safari solo copia imágenes dentro del mismo toque, así que se le entrega la imagen "prometida" en ese momento. Es **experimental**: el botón directo de Strava ("añadir a historia") solo existe para apps nativas.
+- **Dónde está:** en la hoja de un deporte (**Compartir**), en el resumen de un entreno terminado (botón y icono arriba) y en el menú **⋯** de una rutina (**Compartir rutina**).
+- Las imágenes se preparan en cuanto cambias algo, para que **Compartir** abra el menú en el mismo toque (iOS solo lo permite justo después de tocar).
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
@@ -298,13 +326,17 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
 
 - **Instrucciones de los ejercicios en español:** pendiente (876 textos). Los nombres ya están traducidos y se pueden revisar en `src/i18n/exercise-names/es.json`.
 - **Imágenes del catálogo en nuestro propio almacenamiento** (Supabase Storage) si jsDelivr da problemas.
-- **Datos de ejemplo:** las plantillas de rutina cubren la 1.3. Las sesiones de ejemplo (para ver gráficas) llegarán con la 1.6, con un botón para cargarlas y otro para borrarlas.
+- **Datos de ejemplo:** las plantillas de rutina cubren la 1.3. Las sesiones de ejemplo (para ver gráficas) llegarán con la 1.10, con un botón para cargarlas y otro para borrarlas.
 - **Nombre de una rutina de plantilla:** se guarda en el idioma en el que se creó. Cambiar de idioma no la renombra.
 - **Transiciones entre pantallas:** el gesto "atrás" de Android y el botón Volver hacen la animación de volver. En iPhone, la app instalada no tiene gesto de deslizar para volver (limitación de las PWA en iOS).
 - **`body_metrics` y `goals`:** las tablas existen, pero no tienen pantallas en la Fase 1.
 - **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.
 - **Fase 3 (público):** ver [`docs/SOCIAL.md`](SOCIAL.md). Incluye dominio propio para el correo, plan Vercel Pro, RGPD, moderación y RLS de lectura pública según `visibility`.
+- **Compartir (1.6):**
+  - probarlo en un iPhone de verdad: el menú de compartir, Instagram → Historia y pegar la pegatina (en el ordenador solo se pudo simular);
+  - la pegatina es experimental: si Instagram no la pega, queda **Guardar imagen** y añadirla desde el carrete;
+  - más adelante: elegir qué tres datos salen, más fondos y la imagen de "entrenar juntos" (Fase 3).
 - **Deportes y calendario (1.5):**
   - registrar un **entreno de gimnasio en un día pasado** todavía no se puede: los récords se ordenan por la hora de cada serie, y apuntarlo hoy lo colocaría después de los entrenos recientes;
   - gestionar los spots (renombrar, fusionar duplicados, borrar) y el mapa.

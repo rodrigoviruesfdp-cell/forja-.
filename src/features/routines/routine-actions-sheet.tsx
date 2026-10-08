@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Copy, Pencil, Trash2 } from "lucide-react";
+import { CircleCheck, Copy, Pencil, Share, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ interface RoutineActionsSheetProps {
 /** ⋯ menu of a routine: rename, duplicate, make active, delete (confirmed, with undo). */
 export function RoutineActionsSheet({ open, onOpenChange, routine, profile }: RoutineActionsSheetProps) {
   const t = useTranslations("routines");
+  const tShare = useTranslations("share");
   const common = useTranslations("common");
   const router = useRouter();
   const confirm = useConfirm();
@@ -106,6 +107,16 @@ export function RoutineActionsSheet({ open, onOpenChange, routine, profile }: Ro
             actions={[
               { key: "rename", label: t("renameTitle"), Icon: Pencil, onSelect: () => setView("rename") },
               { key: "duplicate", label: t("duplicateRoutine"), Icon: Copy, onSelect: () => void duplicate() },
+              {
+                key: "share",
+                label: tShare("shareRoutine"),
+                Icon: Share,
+                onSelect: () => {
+                  close();
+                  setNavDirection("forward");
+                  router.push(`/share?routine=${routine.id}`);
+                },
+              },
               ...(isActive
                 ? []
                 : [

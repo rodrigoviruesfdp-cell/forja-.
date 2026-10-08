@@ -1,6 +1,7 @@
 "use client";
 
-import { MapPin, Trash2 } from "lucide-react";
+import { MapPin, Share, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useFormatter, useTranslations } from "use-intl";
@@ -18,6 +19,7 @@ import type { RoutineDay, Session } from "@/domain/schemas";
 import { parseDecimal } from "@/domain/units";
 import { usePrefs } from "@/features/preferences/prefs";
 import { RpePicker } from "@/features/session/rpe-picker";
+import { setNavDirection } from "@/features/shell/nav-direction";
 import { useUserData } from "@/features/user-data/user-data-context";
 import { usePlaceNames, usePlacesFor } from "./use-places";
 import { useSportName } from "./use-sport-name";
@@ -78,6 +80,8 @@ function numberText(value: number | null | undefined, locale: string): string {
 
 function SportForm({ target, placeName, close }: { target: SportSheetTarget; placeName: string; close: () => void }) {
   const t = useTranslations("sportLog");
+  const tShare = useTranslations("share");
+  const router = useRouter();
   const tSession = useTranslations("session");
   const tSports = useTranslations("sports");
   const common = useTranslations("common");
@@ -293,10 +297,25 @@ function SportForm({ target, placeName, close }: { target: SportSheetTarget; pla
           {t("save")}
         </Button>
         {existing ? (
-          <Button type="button" variant="destructive" className="w-full" onClick={() => void remove()}>
-            <Trash2 />
-            {t("delete")}
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={() => {
+                close();
+                setNavDirection("forward");
+                router.push(`/share?session=${existing.id}`);
+              }}
+            >
+              <Share />
+              {tShare("shareSession")}
+            </Button>
+            <Button type="button" variant="destructive" className="w-full" onClick={() => void remove()}>
+              <Trash2 />
+              {t("delete")}
+            </Button>
+          </>
         ) : null}
       </div>
     </form>

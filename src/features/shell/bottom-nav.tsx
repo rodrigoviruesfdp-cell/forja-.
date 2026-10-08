@@ -27,8 +27,8 @@ function matches(pathname: string, prefix: string): boolean {
 export function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
-  // During a session its own bar (clock + Finish) takes this place.
-  if (matches(pathname, "/session")) return null;
+  // During a session its own bar (clock + Finish) takes this place; sharing is full screen.
+  if (matches(pathname, "/session") || matches(pathname, "/share")) return null;
 
   return (
     <nav
