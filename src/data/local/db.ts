@@ -3,6 +3,7 @@ import type {
   BodyMetric,
   Exercise,
   Goal,
+  Place,
   Profile,
   Routine,
   RoutineDay,
@@ -11,6 +12,7 @@ import type {
   SessionExercise,
   SessionSet,
 } from "@/domain/schemas";
+import { SESSION_DEFAULTS } from "@/domain/schemas";
 import type { SyncTable } from "@/data/sync/tables";
 
 /** A pending local change. Append-only: each write adds an entry, push coalesces by row. */
@@ -39,6 +41,7 @@ export class LocalDb extends Dexie {
   profiles!: EntityTable<Profile, "id">;
   routine_days!: EntityTable<RoutineDay, "id">;
   routine_exercises!: EntityTable<RoutineExercise, "id">;
+  places!: EntityTable<Place, "id">;
   sessions!: EntityTable<Session, "id">;
   session_exercises!: EntityTable<SessionExercise, "id">;
   session_sets!: EntityTable<SessionSet, "id">;
@@ -63,6 +66,21 @@ export class LocalDb extends Dexie {
       outbox: "++seq, table, [table+row_id]",
       meta: "key",
     });
+    // 1.5: spots, and sessions by sport/spot (for the calendar and, later, achievements).
+    this.version(2)
+      .stores({
+        places: "id, updated_at",
+        sessions: "id, date, routine_day_id, status, sport, place_id, updated_at",
+      })
+      .upgrade((tx) =>
+        tx
+          .table<Session>("sessions")
+          .toCollection()
+          .modify((session) => {
+            session.place_id ??= SESSION_DEFAULTS.place_id;
+            session.metrics ??= SESSION_DEFAULTS.metrics;
+          }),
+      );
   }
 }
 

@@ -123,6 +123,20 @@ export const routineExerciseSchema = z.object({
 });
 export type RoutineExercise = z.infer<typeof routineExerciseSchema>;
 
+export const placeSchema = z.object({
+  id,
+  user_id: id,
+  name: z.string().min(1).max(80),
+  /** The sport it was created for (code or custom text), to list the right spots first. */
+  sport: z.string().max(60).nullable(),
+  ...softDeletable,
+});
+export type Place = z.infer<typeof placeSchema>;
+
+/** What a sport counts (waves, rounds…). Keys are checked per sport in src/domain/sports.ts. */
+export const sessionMetricsSchema = z.record(z.string(), z.number());
+export type SessionMetrics = z.infer<typeof sessionMetricsSchema>;
+
 export const sessionSchema = z.object({
   id,
   user_id: id,
@@ -133,15 +147,23 @@ export const sessionSchema = z.object({
   sport: z.string().max(60).nullable(),
   duration_min: z.number().int().min(0).max(1440).nullable(),
   rpe: z.number().int().min(1).max(10).nullable(),
-  distance_km: z.number().min(0).nullable(),
+  distance_km: z.number().min(0).max(99999.99).nullable(),
   notes: z.string().nullable(),
   status: z.enum(SESSION_STATUSES),
   visibility: z.enum(VISIBILITIES),
   started_at: timestamp.nullable(),
   ended_at: timestamp.nullable(),
+  place_id: id.nullable(),
+  metrics: sessionMetricsSchema,
   ...softDeletable,
 });
 export type Session = z.infer<typeof sessionSchema>;
+
+/** Columns added in 1.5: sessions stored on a phone before that lack them (db.ts fills them in). */
+export const SESSION_DEFAULTS = {
+  place_id: null,
+  metrics: {},
+} satisfies Partial<Session>;
 
 export const sessionExerciseSchema = z.object({
   id,

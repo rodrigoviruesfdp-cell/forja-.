@@ -16,7 +16,9 @@ import {
   unusedExercises,
   withPlannedSets,
 } from "@/domain/sessions/session";
-import type { RoutineDay, Session, SessionExercise, SessionSet } from "@/domain/schemas";
+import { cleanPlaceName, findPlace, newPlace } from "@/domain/places";
+import { editSportSession, newSportSession, type SportInput, skipDay } from "@/domain/sessions/sport-session";
+import type { Place, RoutineDay, Session, SessionExercise, SessionSet } from "@/domain/schemas";
 
 function clock(): Clock {
   return { now: new Date().toISOString(), newId: () => crypto.randomUUID() };
@@ -256,5 +258,58 @@ export async function deleteSet(db: LocalDb, item: SessionExercise, set: Session
   await saveWithRecords(db, { session_sets: softDeleted([set], new Date().toISOString()) }, [item.exercise_id]);
   return async () => {
     await saveWithRecords(db, { session_sets: [set] }, [item.exercise_id]);
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Sports logged by hand, and skipped days
+
+/** Where a sport session happened: one of your spots, a new one by name, or nowhere. */
+export type PlaceChoice = { placeId: string } | { newName: string } | null;
+
+/**
+ * Saves a sport session (new, or editing `existing`). A new spot is created in the same
+ * transaction, unless one with the same name already exists.
+ */
+export async function saveSportSession(
+  db: LocalDb,
+  userId: string,
+  input: Omit<SportInput, "placeId">,
+  place: PlaceChoice,
+  existing: Session | null,
+): Promise<Session> {
+  const c = clock();
+  let placeId: string | null = null;
+  let created: Place | null = null;
+  if (place && "placeId" in place) placeId = place.placeId;
+  else if (place && cleanPlaceName(place.newName)) {
+    const known = findPlace(await db.places.toArray(), place.newName);
+    if (known) placeId = known.id;
+    else {
+      created = newPlace(userId, place.newName, input.sport, c);
+      placeId = created.id;
+    }
+  }
+  const full: SportInput = { ...input, placeId };
+  const session = existing ? editSportSession(existing, full) : newSportSession(userId, full, c);
+  await saveChanges(db, { ...(created ? { places: [created] } : {}), sessions: [session] });
+  return session;
+}
+
+/** Marks a planned day as skipped on `date`. Returns the undo. */
+export async function skipPlannedDay(db: LocalDb, userId: string, day: RoutineDay, date: string): Promise<Undo> {
+  const skipped = skipDay(userId, day, date, clock());
+  await saveChanges(db, { sessions: [skipped] });
+  return async () => {
+    await saveChanges(db, { sessions: softDeleted([skipped], new Date().toISOString()) });
+  };
+}
+
+/** Deletes a session that has no sets (a sport or a skipped day). Returns the undo. */
+export async function deleteSession(db: LocalDb, session: Session): Promise<Undo> {
+  if (session.kind === "gym" && session.status !== "skipped") return discardSession(db, session);
+  await saveChanges(db, { sessions: softDeleted([session], new Date().toISOString()) });
+  return async () => {
+    await saveChanges(db, { sessions: [session] });
   };
 }

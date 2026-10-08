@@ -3,6 +3,7 @@ import {
   bodyMetricSchema,
   exerciseSchema,
   goalSchema,
+  placeSchema,
   profileSchema,
   routineDaySchema,
   routineExerciseSchema,
@@ -23,6 +24,7 @@ export const SYNC_TABLES = [
   "profiles",
   "routine_days",
   "routine_exercises",
+  "places",
   "sessions",
   "session_exercises",
   "session_sets",
@@ -38,6 +40,7 @@ export const TABLE_SCHEMAS = {
   profiles: profileSchema,
   routine_days: routineDaySchema,
   routine_exercises: routineExerciseSchema,
+  places: placeSchema,
   sessions: sessionSchema,
   session_exercises: sessionExerciseSchema,
   session_sets: sessionSetSchema,
@@ -49,3 +52,11 @@ export type RowOf<T extends SyncTable> = z.infer<(typeof TABLE_SCHEMAS)[T]>;
 
 /** Columns the server always overwrites; never worth uploading. */
 export const SERVER_MANAGED_COLUMNS = ["updated_at"] as const;
+
+/**
+ * Values for columns added after a table first shipped. Uploads always carry them, so a row
+ * saved by an older version of the app never sends a NULL where the database wants a value.
+ */
+export const COLUMN_DEFAULTS: { [T in SyncTable]?: Partial<RowOf<T>> } = {
+  sessions: { place_id: null, metrics: {} },
+};

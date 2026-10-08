@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { localDate } from "../dates";
 import { day, NOW, routineExercise, testClock, USER } from "../routines/test-fixtures";
 import { sessionExerciseSchema, sessionSchema, sessionSetSchema } from "../schemas";
 import {
@@ -6,7 +7,6 @@ import {
   durationMinutes,
   editSet,
   finishSession,
-  localDate,
   newSessionExercise,
   newSet,
   pendingSets,

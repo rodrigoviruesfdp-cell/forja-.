@@ -1,7 +1,7 @@
 import type { LocalDb, OutboxEntry } from "@/data/local/db";
 import { getMeta, META_KEYS, setMeta } from "@/data/local/meta";
 import { type PullCursor, RemoteError, type RemoteAdapter, type Row } from "./remote";
-import { SERVER_MANAGED_COLUMNS, SYNC_TABLES, type SyncTable } from "./tables";
+import { COLUMN_DEFAULTS, SERVER_MANAGED_COLUMNS, SYNC_TABLES, type SyncTable } from "./tables";
 
 /**
  * Re-read this much history on every pull. A write that committed slightly after
@@ -67,7 +67,7 @@ export class SyncEngine {
       const ids = [...new Set(entries.filter((e) => e.table === table).map((e) => e.row_id))];
       if (ids.length === 0) continue;
 
-      const rows = (await this.db.table(table).bulkGet(ids)).filter(Boolean).map(toUploadRow);
+      const rows = (await this.db.table(table).bulkGet(ids)).filter(Boolean).map((row) => toUploadRow(table, row));
       const rejectedIds = await this.uploadTable(table, rows);
       pushed += rows.length - rejectedIds.size;
       rejected += rejectedIds.size;
@@ -169,8 +169,8 @@ export class SyncEngine {
   }
 }
 
-function toUploadRow(row: Row): Row {
-  const copy: Record<string, unknown> = { ...row };
+function toUploadRow(table: SyncTable, row: Row): Row {
+  const copy: Record<string, unknown> = { ...COLUMN_DEFAULTS[table], ...row };
   for (const column of SERVER_MANAGED_COLUMNS) delete copy[column];
   return copy as Row;
 }

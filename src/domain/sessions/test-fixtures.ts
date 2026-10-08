@@ -22,6 +22,8 @@ export function session(patch: Partial<Session> = {}): Session {
     visibility: "private",
     started_at: NOW,
     ended_at: null,
+    place_id: null,
+    metrics: {},
     created_at: NOW,
     updated_at: NOW,
     deleted_at: null,

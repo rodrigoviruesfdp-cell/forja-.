@@ -34,6 +34,7 @@
   --primary-foreground: #1d1d1f;
   --done: #34c759;
   --pr: #ff3b30;
+  --streak: #ff9500;
   --planned: #007aff;
   --destructive: #ff3b30;
 
@@ -80,6 +81,7 @@
   --primary-foreground: #1d1d1f;
   --done: #30d158;
   --pr: #ff453a;
+  --streak: #ff9f0a;
   --planned: #0a84ff;
   --destructive: #ff453a;
 
@@ -103,6 +105,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-done: var(--done);
+  --color-streak: var(--streak);
   --color-pr: var(--pr);
   --color-planned: var(--planned);
   --color-destructive: var(--destructive);

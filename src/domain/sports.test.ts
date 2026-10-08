@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MESSAGES } from "@/i18n/config";
-import { canonicalSport, isSportKey, SPORT_KEYS } from "./sports";
+import { canonicalSport, cleanMetrics, isSportKey, SPORT_KEYS, sportProfile } from "./sports";
 
 describe("canonicalSport", () => {
   it("turns a known sport into its code, in any language, case or accent", () => {
@@ -23,5 +23,23 @@ describe("canonicalSport", () => {
         expect(canonicalSport(MESSAGES[locale].sports[key])).toBe(key);
       }
     }
+  });
+});
+
+describe("sportProfile and cleanMetrics", () => {
+  it("asks each sport what makes sense", () => {
+    expect(sportProfile("surf")).toEqual({ distance: false, metrics: ["waves"], placeLabel: "spot" });
+    expect(sportProfile("Boxeo")).toMatchObject({ distance: false, metrics: ["rounds"], placeLabel: "place" });
+    expect(sportProfile("running")).toMatchObject({ distance: true, metrics: [] });
+    expect(sportProfile("football").distance).toBe(false);
+    // A sport that is not in the list may have a distance (rowing, skating…).
+    expect(sportProfile("Remo").distance).toBe(true);
+  });
+
+  it("keeps only the sport's own metrics, as whole numbers within limits", () => {
+    expect(cleanMetrics("surf", { waves: 14.4, rounds: 3, junk: "x" })).toEqual({ waves: 14 });
+    expect(cleanMetrics("boxing", { rounds: 0 })).toEqual({});
+    expect(cleanMetrics("surf", { waves: 5000 })).toEqual({ waves: 1000 });
+    expect(cleanMetrics("running", { waves: 3 })).toEqual({});
   });
 });

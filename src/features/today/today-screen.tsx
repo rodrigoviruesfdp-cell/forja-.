@@ -1,28 +1,30 @@
 "use client";
 
-import { useLiveQuery } from "dexie-react-hooks";
-import { Activity, CalendarCheck, CircleCheck, ChevronRight, Dumbbell, MoonStar, Trophy, UserRound } from "lucide-react";
+import { Activity, CalendarCheck, ChevronRight, Dumbbell, MoonStar, UserRound } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useFormatter, useNow, useTranslations } from "use-intl";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Card, CardLink } from "@/components/ui/card";
-import { sessionSummary } from "@/data/repositories/sessions";
+import { Card, CardButton, CardLink } from "@/components/ui/card";
+import { deleteSession, skipPlannedDay } from "@/data/repositories/sessions";
 import { exerciseDisplayName } from "@/domain/exercises/names";
 import { rotationLetter, rotationOrder, targetLabel, weekdayOf } from "@/domain/routines/builder";
 import { planForDate, weekStrip } from "@/domain/routines/plan";
-import { localDate } from "@/domain/sessions/session";
+import { localDate } from "@/domain/dates";
 import type { RoutineDay, Session } from "@/domain/schemas";
 import { useCatalogNames } from "@/features/exercises/use-exercises";
 import { useProfile } from "@/features/profile/use-profile";
 import { type RoutineTree, useLastGymDayId, useRoutineTree } from "@/features/routines/use-routines";
 import { useWeekdayLabels, WeekStrip } from "@/features/routines/weekdays";
 import { PickDaySheet } from "@/features/session/pick-day-sheet";
+import { SessionRow } from "@/features/session/session-row";
 import { useActiveSession, useSessionsOn } from "@/features/session/use-session";
-import { useSessionFormat } from "@/features/session/use-session-format";
 import { useStartSession } from "@/features/session/use-start-session";
 import { clockText, useTicker } from "@/features/session/use-ticker";
 import { PageHeader } from "@/features/shell/page-header";
+import { SportSheet, type SportSheetTarget } from "@/features/sports/sport-sheet";
+import { useSportName } from "@/features/sports/use-sport-name";
 import { useUserData } from "@/features/user-data/user-data-context";
 
 const PREVIEW = 4;
@@ -39,14 +41,18 @@ export function TodayScreen() {
   const sessionsToday = useSessionsOn(localDate(now));
   const active = useActiveSession();
   const start = useStartSession();
+  const common = useTranslations("common");
+  const { db, user } = useUserData();
   const [picking, setPicking] = useState(false);
+  const [sportSheet, setSportSheet] = useState<SportSheetTarget | null>(null);
 
   const name = profile?.display_name;
   const profileIncomplete = profile ? !profile.goal || !profile.level : false;
   const date = format.dateTime(now, { weekday: "long", day: "numeric", month: "long" });
   const editorHref = tree ? `/routines/edit?id=${tree.routine.id}` : "/routines";
 
-  // A gym day of the routine already started or done today uses up today's slot of the rotation.
+  // A gym day of the routine already started, done or skipped today uses up today's slot of the rotation.
+  const todayIso = localDate(now);
   const today = sessionsToday ?? [];
   const gymDayIds = new Set((tree?.days ?? []).filter((day) => day.kind === "gym").map((day) => day.id));
   const gymDoneToday = today.some((s) => s.routine_day_id !== null && gymDayIds.has(s.routine_day_id));
@@ -54,7 +60,13 @@ export function TodayScreen() {
   const touched = new Set(today.map((s) => s.routine_day_id));
   const planned = (plan?.today ?? []).filter((day) => !touched.has(day.id));
   const done = today.filter((s) => s.status === "completed");
-  const resting = tree && plan && planned.length === 0 && done.length === 0 && !active;
+  const skipped = today.filter((s) => s.status === "skipped");
+  const resting = tree && plan && planned.length === 0 && done.length === 0 && skipped.length === 0 && !active;
+
+  async function skip(day: RoutineDay) {
+    const undo = await skipPlannedDay(db, user.id, day, todayIso);
+    toast(t("skippedToast", { name: day.name }), { action: { label: common("undo"), onClick: () => void undo() } });
+  }
 
   return (
     <>
@@ -68,7 +80,31 @@ export function TodayScreen() {
 
         {done.map((session) => (
           <StaggerItem key={session.id}>
-            <DoneCard session={session} />
+            {session.kind === "gym" ? (
+              <CardLink size="tile" href={`/session?id=${session.id}`} data-nav="forward">
+                <SessionRow session={session} label={t("doneTitle")} trailing={<Chevron />} />
+              </CardLink>
+            ) : (
+              <CardButton size="tile" onClick={() => setSportSheet({ mode: "edit", session })}>
+                <SessionRow session={session} label={t("doneTitle")} trailing={<Chevron />} />
+              </CardButton>
+            )}
+          </StaggerItem>
+        ))}
+
+        {skipped.map((session) => (
+          <StaggerItem key={session.id}>
+            <Card size="tile">
+              <SessionRow
+                session={session}
+                label={t("skippedTitle")}
+                trailing={
+                  <Button variant="ghost" size="sm" className="text-planned" onClick={() => void deleteSession(db, session)}>
+                    {common("undo")}
+                  </Button>
+                }
+              />
+            </Card>
           </StaggerItem>
         ))}
 
@@ -104,7 +140,10 @@ export function TodayScreen() {
                   day={day}
                   href={editorHref}
                   primary={!active}
-                  onStart={() => void start(day, day.name)}
+                  onStart={() =>
+                    day.kind === "gym" ? void start(day, day.name) : setSportSheet({ mode: "new", date: todayIso, day })
+                  }
+                  onSkip={() => void skip(day)}
                 />
               </StaggerItem>
             ))
@@ -124,13 +163,24 @@ export function TodayScreen() {
           </StaggerItem>
         ) : null}
 
-        {tree && !active ? (
+        {active ? null : (
           <StaggerItem>
-            <Button variant="ghost" className="-my-1 w-full text-planned" onClick={() => setPicking(true)}>
-              {tSession("otherDay")}
-            </Button>
+            <div className="-my-1 flex">
+              {tree ? (
+                <Button variant="ghost" className="flex-1 text-planned" onClick={() => setPicking(true)}>
+                  {tSession("otherDay")}
+                </Button>
+              ) : null}
+              <Button
+                variant="ghost"
+                className="flex-1 text-planned"
+                onClick={() => setSportSheet({ mode: "new", date: todayIso })}
+              >
+                {t("logSport")}
+              </Button>
+            </div>
           </StaggerItem>
-        ) : null}
+        )}
 
         {tree && plan?.upcoming ? (
           <StaggerItem>
@@ -180,6 +230,7 @@ export function TodayScreen() {
         ) : null}
       </Stagger>
       <PickDaySheet open={picking} onOpenChange={setPicking} tree={tree ?? null} />
+      <SportSheet open={sportSheet !== null} onOpenChange={(open) => !open && setSportSheet(null)} target={sportSheet} />
     </>
   );
 }
@@ -208,38 +259,8 @@ function ActiveCard({ session }: { session: Session }) {
   );
 }
 
-/** A session finished today: what it was and its numbers. */
-function DoneCard({ session }: { session: Session }) {
-  const t = useTranslations("today");
-  const tSession = useTranslations("session");
-  const fmt = useSessionFormat();
-  const { db } = useUserData();
-  const summary = useLiveQuery(() => sessionSummary(db, session), [db, session]);
-  return (
-    <CardLink size="tile" href={`/session?id=${session.id}`} className="flex items-center gap-3">
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-concentric bg-done text-white">
-        <CircleCheck className="size-6" strokeWidth={2.2} />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="tracking-caption block text-footnote text-muted-foreground uppercase">{t("doneTitle")}</span>
-        <span className="block truncate text-headline">{session.title ?? tSession("title")}</span>
-        {summary ? (
-          <span className="numeric block text-subhead text-muted-foreground">
-            {[fmt.duration(summary.durationMin), tSession("setsCount", { count: summary.workSets }), summary.volumeKg > 0 ? fmt.volume(summary.volumeKg) : null]
-              .filter(Boolean)
-              .join(" · ")}
-          </span>
-        ) : null}
-      </span>
-      {summary && summary.records.length > 0 ? (
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-pr/12 px-2 py-1 text-caption font-semibold text-pr">
-          <Trophy className="size-3.5" strokeWidth={2.4} />
-          {summary.records.length}
-        </span>
-      ) : null}
-      <ChevronRight aria-hidden className="size-5 shrink-0 text-tertiary-foreground" />
-    </CardLink>
-  );
+function Chevron() {
+  return <ChevronRight aria-hidden className="size-5 shrink-0 text-tertiary-foreground" />;
 }
 
 /** Hero card for one planned day: what it is, its first exercises and "Start". */
@@ -249,17 +270,21 @@ function PlannedDayCard({
   href,
   primary,
   onStart,
+  onSkip,
 }: {
   tree: RoutineTree;
   day: RoutineDay;
   href: string;
   /** False while another session runs (that one is the main action then). */
   primary: boolean;
+  /** Gym: start the session. Sport: log it. */
   onStart: () => void;
+  onSkip: () => void;
 }) {
   const t = useTranslations("today");
   const tRoutines = useTranslations("routines");
   const tSession = useTranslations("session");
+  const sportName = useSportName();
   const names = useCatalogNames();
   const items = tree.exercises.get(day.id) ?? [];
   const index = rotationOrder(tree.days).findIndex((d) => d.id === day.id);
@@ -304,15 +329,18 @@ function PlannedDayCard({
         )
       ) : null}
 
-      <div className="flex flex-col gap-3">
-        {day.kind === "gym" ? (
-          <Button size="lg" variant={primary ? "primary" : "secondary"} className="w-full" onClick={onStart}>
-            {tSession("start")}
+      <div className="flex flex-col gap-2">
+        <Button size="lg" variant={primary ? "primary" : "secondary"} className="w-full" onClick={onStart}>
+          {day.kind === "gym" ? tSession("start") : t("registerSport", { sport: sportName(day.sport) || day.name })}
+        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <ButtonLink href={href} variant="ghost" className="w-full">
+            {t("viewRoutine")}
+          </ButtonLink>
+          <Button variant="ghost" className="w-full" onClick={onSkip}>
+            {t("skip")}
           </Button>
-        ) : null}
-        <ButtonLink href={href} variant={day.kind === "gym" ? "ghost" : "secondary"} className="w-full">
-          {t("viewRoutine")}
-        </ButtonLink>
+        </div>
       </div>
     </Card>
   );

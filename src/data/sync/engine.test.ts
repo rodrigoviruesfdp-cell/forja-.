@@ -216,4 +216,45 @@ describe("SyncEngine", () => {
     expect(uploaded).toBeDefined();
     expect(uploaded).not.toHaveProperty("updated_at");
   });
+
+  it("a session saved by an older app version uploads the 1.5 columns with their defaults", async () => {
+    const old = {
+      id: "s1",
+      user_id: USER,
+      date: "2026-10-07",
+      kind: "gym",
+      routine_day_id: null,
+      title: "A",
+      sport: null,
+      duration_min: 50,
+      rpe: null,
+      distance_km: null,
+      notes: null,
+      status: "completed",
+      visibility: "private",
+      started_at: null,
+      ended_at: null,
+      created_at: "2026-10-07T10:00:00.000Z",
+      updated_at: "2026-10-07T10:00:00.000Z",
+      deleted_at: null,
+    };
+    await db.sessions.put(old as never);
+    await db.outbox.add({ table: "sessions", row_id: "s1", queued_at: old.updated_at });
+    await engine.push();
+    expect(remote.table("sessions").get("s1")).toMatchObject({ place_id: null, metrics: {} });
+  });
+});
+
+describe("LocalDb upgrade to version 2 (1.5)", () => {
+  it("fills in the new session columns on rows stored by 1.4", async () => {
+    const name = `upgrade-${++dbCounter}`;
+    const v1 = new (await import("dexie")).default(name);
+    v1.version(1).stores({ sessions: "id, date, routine_day_id, status, updated_at" });
+    await v1.table("sessions").put({ id: "s1", date: "2026-10-07", status: "completed" });
+    v1.close();
+
+    const db = new LocalDb(name);
+    expect(await db.sessions.get("s1")).toMatchObject({ place_id: null, metrics: {} });
+    await db.delete();
+  });
 });

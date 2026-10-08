@@ -68,3 +68,52 @@ export function isSportKey(value: string | null | undefined): value is SportKey 
 export function canonicalSport(value: string): string {
   return BY_ALIAS.get(normalize(value)) ?? value.trim().replace(/\s+/g, " ");
 }
+
+// ---------------------------------------------------------------------------
+// What each sport records (besides duration, effort and notes, which every sport has).
+
+/** Things a sport counts, stored in `sessions.metrics`. */
+export const METRIC_KEYS = ["waves", "rounds", "routes"] as const;
+export type MetricKey = (typeof METRIC_KEYS)[number];
+
+export const METRIC_MAX: Record<MetricKey, number> = { waves: 1000, rounds: 200, routes: 500 };
+
+export interface SportProfile {
+  /** Distance makes sense (running, cycling…). */
+  distance: boolean;
+  metrics: readonly MetricKey[];
+  /** "spot" for surf (that is what surfers call it), "place" for the rest. */
+  placeLabel: "spot" | "place";
+}
+
+const DISTANCE_SPORTS: readonly SportKey[] = ["running", "cycling", "swimming", "hiking", "skiing"];
+
+const SPORT_METRICS: Partial<Record<SportKey, readonly MetricKey[]>> = {
+  surf: ["waves"],
+  boxing: ["rounds"],
+  martial_arts: ["rounds"],
+  climbing: ["routes"],
+};
+
+/** What to ask for a sport. A sport that is not in the list may have a distance (rowing, skating…). */
+export function sportProfile(sport: string): SportProfile {
+  const key = canonicalSport(sport);
+  if (!isSportKey(key)) return { distance: true, metrics: [], placeLabel: "place" };
+  return {
+    distance: DISTANCE_SPORTS.includes(key),
+    metrics: SPORT_METRICS[key] ?? [],
+    placeLabel: key === "surf" ? "spot" : "place",
+  };
+}
+
+/** Only the metrics the sport has, as whole numbers within limits; zeros and blanks are dropped. */
+export function cleanMetrics(sport: string, metrics: Readonly<Record<string, unknown>>): Record<string, number> {
+  const clean: Record<string, number> = {};
+  for (const key of sportProfile(sport).metrics) {
+    const value = metrics[key];
+    if (typeof value !== "number" || !Number.isFinite(value)) continue;
+    const whole = Math.min(METRIC_MAX[key], Math.max(0, Math.round(value)));
+    if (whole > 0) clean[key] = whole;
+  }
+  return clean;
+}

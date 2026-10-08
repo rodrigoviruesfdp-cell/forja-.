@@ -10,8 +10,8 @@ Documento vivo: se actualiza en cada entrega.
 | 1.2 | Catálogo de ejercicios (free-exercise-db traducido), buscador con filtros, ejercicios propios; base de la Comunidad | ✅ Hecha |
 | 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas. Además: rediseño al estilo iOS | ✅ Hecha |
 | 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR. Además: **deporte como código fijo** y un único **"Terminar sesión"** con resumen | ✅ Hecha |
-| 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | Siguiente |
-| 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | |
+| 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | ✅ Hecha |
+| 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | Siguiente |
 | 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | |
 | 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
 | 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | |
@@ -225,6 +225,38 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
 - **Deporte como código fijo** (migración `20261008000300_sport_keys.sql`): `routine_days.sport` y `sessions.sport` guardan `football`, `boxing`, `surf`… El nombre traducido sale de los textos de la app. Un deporte que no está en la lista se guarda tal como lo escribiste. La migración convirtió los nombres que ya había ("Fútbol" → `football`).
 - El buscador de ejercicios es el mismo para rutinas y entrenos (`src/features/exercises/exercise-picker.tsx`).
 
+### Deportes, spots y calendario (1.5)
+
+- **Esquema** (migración `20261009000100_places_and_sport_metrics.sql`):
+  - tabla **`places`**: los spots de cada usuario (nombre y el deporte para el que se creó), con RLS como el resto;
+  - **`sessions.place_id`**: dónde fue la sesión. Clave compuesta, así que solo puede apuntar a un spot tuyo;
+  - **`sessions.metrics`**: lo que cuenta cada deporte, en un único campo JSON (`{"waves": 14}`). La app decide qué datos tiene cada deporte, así que añadir uno nuevo no necesita columnas.
+- **Móviles con datos de la 1.4:** la base del móvil pasa a la versión 2 y rellena los campos nuevos en las sesiones guardadas. Además, cada subida añade los valores por defecto (`COLUMN_DEFAULTS`), por si una versión antigua de la app escribe una sesión sin ellos.
+- **Qué pide cada deporte** (`sportProfile`):
+  - distancia: running, ciclismo, natación, senderismo y esquí (y los deportes que no están en la lista);
+  - olas: surf; asaltos: boxeo y artes marciales; vías y bloques: escalada;
+  - duración, esfuerzo, notas y lugar: todos.
+
+  En surf el lugar se llama **spot**.
+- **Registrar un deporte:** hoy o un día pasado, nunca futuro. Duración con atajos (30–120 min) o escrita. Un deporte registrado después no tiene hora de inicio fiable (`started_at` vacío): lo que cuenta es el día.
+- **Spots:**
+  - se eligen de tu lista (primero los que usaste para ese deporte, el más reciente antes; luego los creados para él; luego el resto) o se escribe uno nuevo, que se crea al guardar;
+  - el mismo nombre con otras mayúsculas, tildes o espacios es el mismo spot: así "100 spots distintos" contará bien;
+  - de momento no se pueden renombrar, fusionar ni borrar. Las coordenadas llegarán con el mapa.
+- **Saltar un día** crea una sesión `skipped` para esa fecha. En una rotación el día no se gasta: pasa al siguiente día de entreno. **Deshacer** la borra.
+- **Calendario:**
+  - meses de lunes a domingo; se cambia de mes con flechas o deslizando;
+  - **verde** = hecho (hasta 3 puntos), **círculo azul** = planificado (solo hoy y días futuros, calculado con la rutina activa), **raya gris** = saltado;
+  - los días pasados que tocaban y no se registraron no se marcan: los planes no se guardan;
+  - al tocar un día se ve su detalle: un entreno de gimnasio abre su resumen; un deporte abre su hoja para corregirlo o borrarlo; hoy, lo planificado se puede **Empezar** o **Registrar**; hoy y los días pasados tienen **Añadir deporte**.
+- **Racha:**
+  - semanas seguidas (de lunes a domingo) con al menos tu objetivo de sesiones completadas, gimnasio y deportes juntos;
+  - el objetivo es el **objetivo semanal** de la rutina activa, o lo que planifica, o 1 sin rutina;
+  - la semana en curso solo suma: no rompe la racha hasta que termina;
+  - se muestra la mejor racha y un anillo con la semana actual;
+  - se usa el objetivo actual para todas las semanas: cambiarlo recalcula también las pasadas.
+- **Color nuevo:** naranja de iOS (`--streak`) solo para la racha.
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
@@ -273,6 +305,9 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
 - **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.
 - **Fase 3 (público):** ver [`docs/SOCIAL.md`](SOCIAL.md). Incluye dominio propio para el correo, plan Vercel Pro, RGPD, moderación y RLS de lectura pública según `visibility`.
+- **Deportes y calendario (1.5):**
+  - registrar un **entreno de gimnasio en un día pasado** todavía no se puede: los récords se ordenan por la hora de cada serie, y apuntarlo hoy lo colocaría después de los entrenos recientes;
+  - gestionar los spots (renombrar, fusionar duplicados, borrar) y el mapa.
 - **Entreno (1.4):**
   - el RPE por serie existe en la base de datos, pero no tiene pantalla: no compensa el toque extra;
   - si una máquina va de 1 en 1 kg, el peso se escribe (el paso de los botones podría ser configurable más adelante);

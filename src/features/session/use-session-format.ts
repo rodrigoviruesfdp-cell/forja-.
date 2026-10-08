@@ -26,7 +26,9 @@ export function useSessionFormat() {
     duration: (minutes: number | null) => {
       if (minutes === null) return "—";
       if (minutes < 60) return t("stats.minutes", { count: minutes });
-      return t("stats.hours", { hours: Math.floor(minutes / 60), minutes: String(minutes % 60).padStart(2, "0") });
+      const hours = Math.floor(minutes / 60);
+      if (minutes % 60 === 0) return t("stats.hoursOnly", { hours });
+      return t("stats.hours", { hours, minutes: String(minutes % 60).padStart(2, "0") });
     },
     /** Total kilos moved ("—" for a session without added weight). */
     volume: (kg: number) => (kg > 0 ? `${format.number(Math.round(fromKg(kg, units)))} ${units}` : "—"),

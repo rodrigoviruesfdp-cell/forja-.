@@ -51,3 +51,21 @@ export function useSessionsOn(date: string): Session[] | undefined {
     return rows.sort((a, b) => (a.started_at ?? a.created_at).localeCompare(b.started_at ?? b.created_at));
   }, [db, date]);
 }
+
+/** Sessions between two days (yyyy-mm-dd, both included). */
+export function useSessionsBetween(from: string, to: string): Session[] | undefined {
+  const { db } = useUserData();
+  return useLiveQuery(
+    () => db.sessions.where("date").between(from, to, true, true).filter((s) => !s.deleted_at).toArray(),
+    [db, from, to],
+  );
+}
+
+/** Every session's day and status (for the streak). */
+export function useSessionDays(): Pick<Session, "date" | "status" | "deleted_at">[] | undefined {
+  const { db } = useUserData();
+  return useLiveQuery(
+    async () => (await db.sessions.toArray()).map(({ date, status, deleted_at }) => ({ date, status, deleted_at })),
+    [db],
+  );
+}

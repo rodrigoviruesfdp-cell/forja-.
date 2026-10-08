@@ -1,7 +1,6 @@
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { motion } from "motion/react";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { cleanText } from "@/data/repositories/profiles";
 import { finishSession, sessionSummary } from "@/data/repositories/sessions";
 import type { Session } from "@/domain/schemas";
 import { useUserData } from "@/features/user-data/user-data-context";
-import { cn } from "@/lib/utils";
+import { RpePicker } from "./rpe-picker";
 import { SessionStats } from "./session-stats";
 
 interface FinishSheetProps {
@@ -78,28 +77,7 @@ export function FinishSheet({ open, onOpenChange, session, pending, names, onFin
 
         <Group title={t("howHard")} footer={t("howHardFooter")}>
           <GroupRow className="py-3">
-            <div role="radiogroup" aria-label={t("howHard")} className="grid w-full grid-cols-5 gap-2">
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => {
-                const on = rpe === value;
-                return (
-                  <motion.button
-                    key={value}
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    aria-label={t("rpe", { value })}
-                    onClick={() => setRpe(on ? null : value)}
-                    whileTap={{ scale: 0.9 }}
-                    className={cn(
-                      "numeric flex h-11 cursor-pointer items-center justify-center rounded-[12px] text-headline",
-                      on ? "bg-foreground text-background" : "bg-surface-2",
-                    )}
-                  >
-                    {value}
-                  </motion.button>
-                );
-              })}
-            </div>
+            <RpePicker value={rpe} onChange={setRpe} />
           </GroupRow>
         </Group>
 

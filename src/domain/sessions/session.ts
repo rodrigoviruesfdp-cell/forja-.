@@ -5,6 +5,7 @@
  * from the session's target (`session_exercises.target_sets`, copied from the routine when
  * the session starts): nothing to clean up if you stop early, and one write per set.
  */
+import { localDate } from "../dates";
 import { byPosition, type Clock, cleanName, DEFAULT_TARGETS, nextPosition } from "../routines/builder";
 import type { RoutineDay, RoutineExercise, Session, SessionExercise, SessionSet } from "../schemas";
 import { displayDecimals, fromKg, roundTo, toKg, type WeightUnit } from "../units";
@@ -27,13 +28,6 @@ export const IDLE_MINUTES = 30;
 
 const alive = <T extends { deleted_at: string | null }>(row: T) => !row.deleted_at;
 
-/** yyyy-mm-dd of a moment in the phone's time zone: a session belongs to the day you did it. */
-export function localDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
 // ---------------------------------------------------------------------------
 // Starting
@@ -64,6 +58,8 @@ export function startSession(input: StartInput, clock: Clock): { session: Sessio
     visibility: "private",
     started_at: clock.now,
     ended_at: null,
+    place_id: null,
+    metrics: {},
     created_at: clock.now,
     updated_at: clock.now,
     deleted_at: null,

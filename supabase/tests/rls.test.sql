@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(31);
+select plan(36);
 
 -- Fixtures (as postgres, RLS bypassed) -----------------------------------------
 insert into auth.users (id, email, aud, role)
@@ -197,6 +197,27 @@ select lives_ok(
   'Ana can log a sport session the same day'
 );
 
+-- Places and sport metrics (1.5) ------------------------------------------------------
+select lives_ok(
+  $$ insert into public.places (id, name, sport)
+     values ('aaaaaaaa-0000-0000-0000-0000000000f1', 'Zurriola', 'surf') $$,
+  'Ana can save a spot'
+);
+
+select lives_ok(
+  $$ insert into public.sessions (date, kind, sport, duration_min, place_id, metrics)
+     values (current_date - 3, 'sport', 'surf', 120, 'aaaaaaaa-0000-0000-0000-0000000000f1', '{"waves": 14}') $$,
+  'Ana can log a past surf session at her spot with its waves'
+);
+
+select throws_ok(
+  $$ insert into public.sessions (date, kind, sport, metrics)
+     values (current_date, 'sport', 'surf', '[14]') $$,
+  '23514',
+  null,
+  'metrics must be a JSON object'
+);
+
 -- Public identity (usernames) ----------------------------------------------------------
 select lives_ok(
   $$ update public.profiles set username = 'ana.lifts', bio = 'Hola'
@@ -234,6 +255,20 @@ select is(
     + (select count(*)::int from public.routine_days),
   0,
   'Bob cannot see Ana''s sessions, sets or routine days'
+);
+
+select is(
+  (select count(*)::int from public.places),
+  0,
+  'Bob cannot see Ana''s spots'
+);
+
+select throws_ok(
+  $$ insert into public.sessions (date, kind, sport, place_id)
+     values (current_date, 'sport', 'surf', 'aaaaaaaa-0000-0000-0000-0000000000f1') $$,
+  '23503',
+  null,
+  'Bob cannot log a session at Ana''s spot (composite FK)'
 );
 
 -- Anonymous visitors get nothing ----------------------------------------------------------

@@ -6,16 +6,17 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.4.** Ya funcionan:
+> **Estado: entrega 1.5.** Ya funcionan:
 > - el login, el perfil y las preferencias;
 > - la sincronización sin conexión y la app instalable;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
 > - el **constructor de rutinas**: semanal o en rotación A/B/C/D, con deportes, y la pantalla **Hoy** que te dice qué toca;
 > - el **registro del entreno en vivo**: cada serie en uno a tres toques, lo que hiciste la última vez, calentamientos, récords y un resumen al terminar;
+> - los **deportes** (también de días pasados) con su spot y lo que cuentan (olas, asaltos, vías…), y el **calendario** con tu racha de semanas;
 > - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
-> Calendario y Progreso son de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md) y el de los logros en [docs/LOGROS.md](docs/LOGROS.md).
+> Progreso es de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md) y el de los logros en [docs/LOGROS.md](docs/LOGROS.md).
 >
 > **Tu instalación ya está hecha:** proyecto Supabase `forja`, proyecto Vercel `forja` y app en <https://forja-gilt-six.vercel.app>. Los pasos 2 a 7 sirven solo si alguna vez hay que montarlo desde cero.
 
@@ -179,6 +180,26 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
 
 ## 9. Cómo probar las entregas
 
+### Entrega 1.5: deportes, spots y calendario
+
+1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
+2. **Registrar un deporte:** en **Hoy**, **Registrar deporte**.
+   - Elige el deporte (o escribe uno que no esté).
+   - Duración con los atajos (30, 45, 60, 90, 120 min) o escrita.
+   - Según el deporte, aparecen sus datos: **olas** en surf, **asaltos** en boxeo, **vías y bloques** en escalada, **distancia** en running, bici, natación…
+   - **Spot** (o lugar): escribe "Zurriola" la primera vez; las siguientes aparece en la lista para tocarlo. Escribirlo igual con otras mayúsculas o sin tildes no lo duplica.
+   - Esfuerzo de 1 a 10 y notas, opcionales. **Guardar**.
+3. En **Hoy** aparece **Hecho hoy · Surf · 1 h 30 min · 14 olas · Zurriola**. Tócalo para corregirlo o eliminarlo (con **Deshacer**).
+4. **Un deporte de la rutina:** si hoy toca (por ejemplo, fútbol los miércoles), su tarjeta tiene **Registrar fútbol**, que abre la hoja ya rellenada.
+5. **Saltar un día:** en la tarjeta de lo que toca, **Saltar hoy**. Queda como **Saltado hoy** (con **Deshacer**). En una rotación, ese día no se pierde: pasa al siguiente día de entreno.
+6. **Calendario** (pestaña de abajo):
+   - **Racha:** semanas seguidas en las que llegas a tu objetivo de sesiones (gimnasio y deportes juntos). El anillo es la semana actual.
+   - Cada día lleva **puntos verdes** (hecho), **círculos azules** (lo que planifica tu rutina, de hoy en adelante) o una **raya gris** (saltado).
+   - Cambia de mes con las flechas o deslizando. **Hoy** te devuelve al mes actual.
+   - **Toca un día** para ver lo que hiciste: un entreno de gimnasio abre su resumen; un deporte abre su hoja para corregirlo.
+   - En días pasados, **Añadir deporte** apunta algo que hiciste ese día.
+7. **Sin conexión:** todo funciona igual en modo avión; se sube al volver la red.
+
 ### Entrega 1.4: el entreno en vivo
 
 1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
@@ -315,8 +336,8 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 ```
 src/
   app/            Rutas de Next.js: solo montan pantallas
-  features/       Pantallas y hooks por funcionalidad (auth, profile, routines, session, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords… Sin React ni Supabase
+  features/       Pantallas y hooks por funcionalidad (auth, calendar, profile, routines, session, sports, shell…)
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)

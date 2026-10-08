@@ -10,9 +10,12 @@ import {
   finishSession,
   lastPerformance,
   logSet,
+  deleteSession,
   removeSessionExercise,
+  saveSportSession,
   sessionExercises,
   setsOf,
+  skipPlannedDay,
   startSession,
   updateSet,
 } from "./sessions";
@@ -182,5 +185,48 @@ describe("sessions repository", () => {
     expect(await setsOf(db, [bench.id])).toEqual([]);
     await undo();
     expect(await setsOf(db, [bench.id])).toHaveLength(1);
+  });
+
+  const surfInput = {
+    sport: "surf",
+    date: "2026-10-05",
+    durationMin: 120,
+    rpe: 7,
+    distanceKm: null,
+    metrics: { waves: 14 },
+    notes: null,
+    routineDayId: null,
+    title: "Surf",
+  };
+
+  it("logs a sport with a new spot in one go, and reuses the spot by name next time", async () => {
+    const first = await saveSportSession(db, USER, surfInput, { newName: "Zurriola" }, null);
+    const places = await db.places.toArray();
+    expect(places.map((p) => [p.name, p.sport])).toEqual([["Zurriola", "surf"]]);
+    expect(first).toMatchObject({ kind: "sport", status: "completed", place_id: places[0]?.id, metrics: { waves: 14 } });
+    expect(await db.outbox.where("table").equals("places").count()).toBe(1);
+
+    const second = await saveSportSession(db, USER, { ...surfInput, date: "2026-10-06" }, { newName: " zurriola " }, null);
+    expect(await db.places.count()).toBe(1);
+    expect(second.place_id).toBe(first.place_id);
+
+    const edited = await saveSportSession(db, USER, { ...surfInput, durationMin: 90 }, null, first);
+    expect(edited).toMatchObject({ id: first.id, duration_min: 90, place_id: null });
+  });
+
+  it("skips a planned day and undo brings it back to planned", async () => {
+    const undo = await skipPlannedDay(db, USER, gymDay, "2026-10-08");
+    const skipped = await db.sessions.where("date").equals("2026-10-08").toArray();
+    expect(skipped.map((s) => [s.status, s.routine_day_id])).toEqual([["skipped", gymDay.id]]);
+    await undo();
+    expect((await db.sessions.where("date").equals("2026-10-08").toArray())[0]?.deleted_at).not.toBeNull();
+  });
+
+  it("deletes a sport session with undo", async () => {
+    const surf = await saveSportSession(db, USER, surfInput, null, null);
+    const undo = await deleteSession(db, surf);
+    expect((await db.sessions.get(surf.id))?.deleted_at).not.toBeNull();
+    await undo();
+    expect((await db.sessions.get(surf.id))?.deleted_at).toBeNull();
   });
 });
