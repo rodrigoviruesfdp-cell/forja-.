@@ -6,7 +6,7 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.6.** Ya funcionan:
+> **Estado: entrega 1.7.** Ya funcionan:
 > - el login, el perfil y las preferencias;
 > - la sincronización sin conexión y la app instalable;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
@@ -14,6 +14,7 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 > - el **registro del entreno en vivo**: cada serie en uno a tres toques, lo que hiciste la última vez, calentamientos, récords y un resumen al terminar;
 > - los **deportes** (también de días pasados) con su spot y lo que cuentan (olas, asaltos, vías…), y el **calendario** con tu racha de semanas;
 > - **compartir en Instagram**: una imagen de tu sesión (con tu foto y los datos encima, o sobre fondo oscuro), una pegatina transparente y la imagen de tu rutina;
+> - los **logros**: medallas con niveles que se consiguen entrenando, una animación al desbloquearlas y una fila de **destacados** bajo tu perfil, como en Instagram;
 > - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
@@ -76,6 +77,9 @@ Las tablas y sus reglas de seguridad están en la carpeta [`supabase/migrations`
 | 3 | `20261007000300_profiles_on_signup.sql` | Crea tu perfil automáticamente |
 | 4 | `20261008000100_profile_public_identity.sql` | Nombre de usuario y datos públicos para la futura comunidad |
 | 5 | `20261008000200_fk_indexes.sql` | Índices para que las consultas sigan siendo rápidas |
+| 6 | `20261008000300_sport_keys.sql` | Guarda los deportes como códigos (1.4) |
+| 7 | `20261009000100_places_and_sport_metrics.sql` | Spots y datos de cada deporte (1.5) |
+| 8 | `20261010000100_user_achievements.sql` | Logros conseguidos (1.7) |
 
 Para cada archivo:
 
@@ -180,6 +184,27 @@ Para que el enlace del correo lleve a tu app:
 A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez descarga tus datos; después abre al instante, también sin cobertura.
 
 ## 9. Cómo probar las entregas
+
+### Entrega 1.7: logros y destacados
+
+1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
+2. **Lo que ya hiciste cuenta.** Al abrirla (con conexión), la app repasa tus sesiones. Si ya cumples algún logro (por ejemplo **Primera piedra**, tu primera sesión), aparece la animación **¡Logro conseguido!** con la medalla. Toca **Siguiente** para ver el próximo, **Seguir** para cerrar o **Ver** para abrirlo.
+3. **Destacados en tu perfil:** toca tu inicial arriba a la derecha (Perfil). Bajo tu nombre está la fila de círculos:
+   - sin elegir nada, salen tus 5 últimos logros;
+   - un **anillo de color** marca los que aún no has abierto;
+   - el último círculo, **Todos**, abre la lista completa.
+4. **Ver un logro:** toca un círculo. Se abre a pantalla completa, como una historia:
+   - la medalla y su nivel (bronce, plata, oro, platino, diamante);
+   - **cuándo** lo conseguiste y **con qué sesión**;
+   - lo que falta para el siguiente nivel (por ejemplo **10 / 50** sesiones de gimnasio);
+   - toca los lados o desliza para pasar al siguiente; desliza hacia abajo o toca **✕** para cerrar.
+5. **Destacar:** en un logro conseguido, **Destacar**. Desde ese momento tu perfil enseña solo los que destaques (hasta 8), en el orden en que los elegiste. **Destacado** otra vez lo quita.
+6. **Todos los logros:** conseguidos, **en progreso** (con su barra) y **secretos** (salen como "?" hasta que los consigues).
+7. **Al terminar un entreno o guardar un deporte**, si consigues un logro o subes de nivel, la animación sale en ese momento.
+8. **Compartir un logro:** en el logro, **Compartir**. Igual que con las sesiones: con tu foto, sobre fondo oscuro o como pegatina cuadrada.
+9. **Sin conexión:** todo funciona igual; los logros se suben al volver la red y no se duplican aunque uses dos móviles.
+
+Los logros son un primer borrador para pulirlos juntos: la lista está en [docs/LOGROS.md](docs/LOGROS.md).
 
 ### Entrega 1.6: compartir en Instagram
 
@@ -352,8 +377,8 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 ```
 src/
   app/            Rutas de Next.js: solo montan pantallas
-  features/       Pantallas y hooks por funcionalidad (auth, calendar, profile, routines, session, share, sports, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir… Sin React ni Supabase
+  features/       Pantallas y hooks por funcionalidad (achievements, auth, calendar, profile, routines, session, share, sports, shell…)
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir, el motor de logros… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)

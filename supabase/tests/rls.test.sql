@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(36);
+select plan(41);
 
 -- Fixtures (as postgres, RLS bypassed) -----------------------------------------
 insert into auth.users (id, email, aud, role)
@@ -205,8 +205,9 @@ select lives_ok(
 );
 
 select lives_ok(
-  $$ insert into public.sessions (date, kind, sport, duration_min, place_id, metrics)
-     values (current_date - 3, 'sport', 'surf', 120, 'aaaaaaaa-0000-0000-0000-0000000000f1', '{"waves": 14}') $$,
+  $$ insert into public.sessions (id, date, kind, sport, duration_min, place_id, metrics)
+     values ('aaaaaaaa-0000-0000-0000-0000000000f2', current_date - 3, 'sport', 'surf', 120,
+             'aaaaaaaa-0000-0000-0000-0000000000f1', '{"waves": 14}') $$,
   'Ana can log a past surf session at her spot with its waves'
 );
 
@@ -216,6 +217,29 @@ select throws_ok(
   '23514',
   null,
   'metrics must be a JSON object'
+);
+
+-- Achievements (1.7) ----------------------------------------------------------------
+select lives_ok(
+  $$ insert into public.user_achievements (id, achievement_key, tier, unlocked_at, session_id)
+     values ('aaaaaaaa-0000-0000-0000-0000000000a1', 'the_search', 1, now(), 'aaaaaaaa-0000-0000-0000-0000000000f2') $$,
+  'Ana can record an unlock with the session that earned it'
+);
+
+select throws_ok(
+  $$ insert into public.user_achievements (achievement_key, tier, unlocked_at)
+     values ('the_search', 1, now()) $$,
+  '23505',
+  null,
+  'the same level of an achievement is stored once'
+);
+
+select throws_ok(
+  $$ insert into public.user_achievements (achievement_key, tier, unlocked_at)
+     values ('The Search!', 0, now()) $$,
+  '23514',
+  null,
+  'achievement keys are codes and levels start at 1'
 );
 
 -- Public identity (usernames) ----------------------------------------------------------
@@ -269,6 +293,20 @@ select throws_ok(
   '23503',
   null,
   'Bob cannot log a session at Ana''s spot (composite FK)'
+);
+
+select is(
+  (select count(*)::int from public.user_achievements),
+  0,
+  'Bob cannot see Ana''s achievements'
+);
+
+select throws_ok(
+  $$ insert into public.user_achievements (achievement_key, tier, unlocked_at, session_id)
+     values ('the_search', 1, now(), 'aaaaaaaa-0000-0000-0000-0000000000f2') $$,
+  '23503',
+  null,
+  'Bob cannot attach an achievement to a session that is not his'
 );
 
 -- Anonymous visitors get nothing ----------------------------------------------------------

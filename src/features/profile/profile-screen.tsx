@@ -3,6 +3,7 @@
 import { useTranslations } from "use-intl";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Spinner } from "@/components/ui/spinner";
+import { HighlightsRow } from "@/features/achievements/highlights-row";
 import { PageHeader } from "@/features/shell/page-header";
 import { useUserData } from "@/features/user-data/user-data-context";
 import { AccountSection } from "./sections/account-section";
@@ -33,6 +34,9 @@ export function ProfileScreen() {
               {profile?.username ? `@${profile.username}` : user.email}
             </p>
           </div>
+        </StaggerItem>
+        <StaggerItem>
+          <HighlightsRow />
         </StaggerItem>
         <StaggerItem>
           <PreferencesSection />

@@ -195,6 +195,23 @@ export const sessionSetSchema = z.object({
 });
 export type SessionSet = z.infer<typeof sessionSetSchema>;
 
+/** Achievement codes, like the database check: lowercase letters, digits and underscores. */
+export const ACHIEVEMENT_KEY_PATTERN = /^[a-z0-9_]{1,60}$/;
+
+/** One unlocked level of an achievement (the achievements themselves live in src/domain/achievements). */
+export const userAchievementSchema = z.object({
+  id,
+  user_id: id,
+  achievement_key: z.string().regex(ACHIEVEMENT_KEY_PATTERN),
+  tier: z.number().int().min(1).max(20),
+  unlocked_at: timestamp,
+  session_id: id.nullable(),
+  seen_at: timestamp.nullable(),
+  featured_position: z.number().int().min(0).max(99).nullable(),
+  ...softDeletable,
+});
+export type UserAchievement = z.infer<typeof userAchievementSchema>;
+
 export const bodyMetricSchema = z.object({
   id,
   user_id: id,

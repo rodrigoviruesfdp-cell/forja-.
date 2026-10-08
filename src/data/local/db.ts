@@ -11,6 +11,7 @@ import type {
   Session,
   SessionExercise,
   SessionSet,
+  UserAchievement,
 } from "@/domain/schemas";
 import { SESSION_DEFAULTS } from "@/domain/schemas";
 import type { SyncTable } from "@/data/sync/tables";
@@ -45,6 +46,7 @@ export class LocalDb extends Dexie {
   sessions!: EntityTable<Session, "id">;
   session_exercises!: EntityTable<SessionExercise, "id">;
   session_sets!: EntityTable<SessionSet, "id">;
+  user_achievements!: EntityTable<UserAchievement, "id">;
   body_metrics!: EntityTable<BodyMetric, "id">;
   goals!: EntityTable<Goal, "id">;
   outbox!: EntityTable<OutboxEntry, "seq">;
@@ -81,6 +83,10 @@ export class LocalDb extends Dexie {
             session.metrics ??= SESSION_DEFAULTS.metrics;
           }),
       );
+    // 1.7: unlocked achievements.
+    this.version(3).stores({
+      user_achievements: "id, achievement_key, updated_at",
+    });
   }
 }
 

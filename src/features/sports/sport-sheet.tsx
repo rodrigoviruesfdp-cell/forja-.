@@ -17,6 +17,7 @@ import { type PlaceChoice, deleteSession, saveSportSession } from "@/data/reposi
 import { canonicalSport, METRIC_MAX, type MetricKey, SPORT_KEYS, sportProfile } from "@/domain/sports";
 import type { RoutineDay, Session } from "@/domain/schemas";
 import { parseDecimal } from "@/domain/units";
+import { useAchievementCheck } from "@/features/achievements/achievements-provider";
 import { usePrefs } from "@/features/preferences/prefs";
 import { RpePicker } from "@/features/session/rpe-picker";
 import { setNavDirection } from "@/features/shell/nav-direction";
@@ -82,6 +83,7 @@ function SportForm({ target, placeName, close }: { target: SportSheetTarget; pla
   const t = useTranslations("sportLog");
   const tShare = useTranslations("share");
   const router = useRouter();
+  const checkAchievements = useAchievementCheck();
   const tSession = useTranslations("session");
   const tSports = useTranslations("sports");
   const common = useTranslations("common");
@@ -136,6 +138,7 @@ function SportForm({ target, placeName, close }: { target: SportSheetTarget; pla
     );
     toast.success(t("saved", { sport: sportName(code) }));
     close();
+    void checkAchievements();
   }
 
   async function remove() {

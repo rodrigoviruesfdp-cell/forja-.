@@ -10,17 +10,30 @@ import { Group, GroupRow } from "@/components/ui/group";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/features/achievements/badge";
 import { useRoutineTree } from "@/features/routines/use-routines";
 import { PageHeader } from "@/features/shell/page-header";
-import { canvasBlob, loadPhoto, type Photo, renderRoutine, renderSession, type Template } from "./render";
-import { useRoutineCard, useSessionShare } from "./use-share-content";
+import {
+  canvasBlob,
+  loadPhoto,
+  type Photo,
+  renderAchievement,
+  renderRoutine,
+  renderSession,
+  svgToImage,
+  type Template,
+} from "./render";
+import { useAchievementCard, useRoutineCard, useSessionShare } from "./use-share-content";
 
-/** /share?session=… or /share?routine=… */
+/** /share?session=…, /share?routine=… or /share?achievement=… */
 export function ShareScreen() {
   const params = useSearchParams();
   const sessionId = params.get("session");
   const routineId = params.get("routine");
-  return sessionId ? <SessionShareScreen sessionId={sessionId} /> : <RoutineShareScreen routineId={routineId} />;
+  const achievementKey = params.get("achievement");
+  if (sessionId) return <SessionShareScreen sessionId={sessionId} />;
+  if (achievementKey) return <AchievementShareScreen achievementKey={achievementKey} />;
+  return <RoutineShareScreen routineId={routineId} />;
 }
 
 function Loading() {
@@ -76,26 +89,14 @@ function useRendered(draw: (() => HTMLCanvasElement) | null, type: "image/jpeg" 
   return rendered;
 }
 
-function SessionShareScreen({ sessionId }: { sessionId: string }) {
+/** Photo / Plain / Sticker, and the photo you pick for the first one. */
+function useTemplatePicker() {
   const t = useTranslations("share");
-  const share = useSessionShare(sessionId);
   const [template, setTemplate] = useState<Template>("plain");
   const [photo, setPhoto] = useState<{ photo: Photo; release: () => void; id: number } | null>(null);
-  const [showPlace, setShowPlace] = useState(true);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => () => photo?.release(), [photo]);
-
-  const card = share ? share.card(showPlace) : null;
-  const type = template === "sticker" ? "image/png" : "image/jpeg";
-  const rendered = useRendered(
-    card ? () => renderSession(card, template, photo?.photo ?? null) : null,
-    type,
-    `${JSON.stringify(card)}|${template}|${photo?.id ?? 0}`,
-  );
-
-  if (share === undefined) return <Loading />;
-  if (share === null) return <NotFound />;
 
   async function pickPhoto(file: File | undefined) {
     if (!file) return;
@@ -108,37 +109,79 @@ function SessionShareScreen({ sessionId }: { sessionId: string }) {
     }
   }
 
+  const rows = (
+    <>
+      <GroupRow className="py-3">
+        <SegmentedControl<Template>
+          aria-label={t("style")}
+          value={template}
+          options={(["photo", "plain", "sticker"] as const).map((value) => ({ value, label: t(`templates.${value}`) }))}
+          onValueChange={(next) => {
+            setTemplate(next);
+            if (next === "photo" && !photo) input.current?.click();
+          }}
+        />
+      </GroupRow>
+      {template === "photo" ? (
+        <GroupRow className="py-1">
+          <button
+            type="button"
+            onClick={() => input.current?.click()}
+            className="flex h-11 w-full cursor-pointer items-center gap-3 text-left font-medium text-planned"
+          >
+            <ImagePlus className="size-5" strokeWidth={2.2} />
+            {photo ? t("changePhoto") : t("choosePhoto")}
+          </button>
+        </GroupRow>
+      ) : null}
+    </>
+  );
+
+  const fileInput = (
+    <input
+      ref={input}
+      type="file"
+      accept="image/*"
+      aria-label={t("choosePhoto")}
+      className="sr-only"
+      onChange={(e) => {
+        void pickPhoto(e.target.files?.[0]);
+        e.target.value = "";
+      }}
+    />
+  );
+
+  return { template, photo: photo?.photo ?? null, photoId: photo?.id ?? 0, rows, fileInput };
+}
+
+function SessionShareScreen({ sessionId }: { sessionId: string }) {
+  const t = useTranslations("share");
+  const share = useSessionShare(sessionId);
+  const picker = useTemplatePicker();
+  const [showPlace, setShowPlace] = useState(true);
+  const { template } = picker;
+
+  const card = share ? share.card(showPlace) : null;
+  const type = template === "sticker" ? "image/png" : "image/jpeg";
+  const rendered = useRendered(
+    card ? () => renderSession(card, template, picker.photo) : null,
+    type,
+    `${JSON.stringify(card)}|${template}|${picker.photoId}`,
+  );
+
+  if (share === undefined) return <Loading />;
+  if (share === null) return <NotFound />;
+
   return (
     <ShareLayout
       preview={rendered}
       sticker={template === "sticker"}
+      stickerShape="wide"
       fileName={`${share.fileName}${template === "sticker" ? "-pegatina.png" : ".jpg"}`}
       controls={
         <>
           <Group>
-            <GroupRow className="py-3">
-              <SegmentedControl<Template>
-                aria-label={t("style")}
-                value={template}
-                options={(["photo", "plain", "sticker"] as const).map((value) => ({ value, label: t(`templates.${value}`) }))}
-                onValueChange={(next) => {
-                  setTemplate(next);
-                  if (next === "photo" && !photo) input.current?.click();
-                }}
-              />
-            </GroupRow>
-            {template === "photo" ? (
-              <GroupRow className="py-1">
-                <button
-                  type="button"
-                  onClick={() => input.current?.click()}
-                  className="flex h-11 w-full cursor-pointer items-center gap-3 text-left font-medium text-planned"
-                >
-                  <ImagePlus className="size-5" strokeWidth={2.2} />
-                  {photo ? t("changePhoto") : t("choosePhoto")}
-                </button>
-              </GroupRow>
-            ) : null}
+            {picker.rows}
             {share.placeName ? (
               <GroupRow>
                 <label htmlFor="share-place" className="flex-1">
@@ -148,19 +191,60 @@ function SessionShareScreen({ sessionId }: { sessionId: string }) {
               </GroupRow>
             ) : null}
           </Group>
-          <input
-            ref={input}
-            type="file"
-            accept="image/*"
-            aria-label={t("choosePhoto")}
-            className="sr-only"
-            onChange={(e) => {
-              void pickPhoto(e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
+          {picker.fileInput}
         </>
       }
+    />
+  );
+}
+
+function AchievementShareScreen({ achievementKey }: { achievementKey: string }) {
+  const t = useTranslations("share");
+  const card = useAchievementCard(achievementKey);
+  const picker = useTemplatePicker();
+  const { template } = picker;
+  const svg = useRef<SVGSVGElement>(null);
+  const [badge, setBadge] = useState<{ image: HTMLImageElement; key: string } | null>(null);
+  const badgeKey = card ? `${card.icon}|${card.tone}` : "";
+
+  useEffect(() => {
+    if (!svg.current || !badgeKey) return;
+    let cancelled = false;
+    void svgToImage(svg.current, 640).then((image) => {
+      if (!cancelled) setBadge({ image, key: badgeKey });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [badgeKey]);
+
+  const ready = card && badge?.key === badgeKey ? badge.image : null;
+  const rendered = useRendered(
+    card && ready ? () => renderAchievement(card.card, template, picker.photo, ready) : null,
+    template === "sticker" ? "image/png" : "image/jpeg",
+    `${JSON.stringify(card?.card ?? null)}|${template}|${picker.photoId}|${ready ? badgeKey : ""}`,
+  );
+
+  if (card === undefined) return <Loading />;
+  if (card === null) return <NotFound />;
+
+  return (
+    <ShareLayout
+      preview={rendered}
+      sticker={template === "sticker"}
+      stickerShape="square"
+      fileName={`forja-logro-${achievementKey.replace(/_/g, "-")}${template === "sticker" ? "-pegatina.png" : ".jpg"}`}
+      controls={
+        <>
+          <Group>{picker.rows}</Group>
+          {picker.fileInput}
+          {/* The medal, drawn once here to become part of the image. */}
+          <div aria-hidden className="pointer-events-none fixed -left-[9999px] size-[100px] opacity-0">
+            <Badge svgRef={svg} icon={card.icon} tone={card.tone} />
+          </div>
+        </>
+      }
+      hint={template === "sticker" ? t("hintSticker") : t("hintStory")}
     />
   );
 }
@@ -171,20 +255,25 @@ function RoutineShareScreen({ routineId }: { routineId: string | null }) {
   const rendered = useRendered(card ? () => renderRoutine(card) : null, "image/jpeg", JSON.stringify(card ?? null, (_, v) => (typeof v === "function" ? undefined : v)));
   if (tree === undefined) return <Loading />;
   if (!tree || !card) return <NotFound />;
-  return <ShareLayout preview={rendered} sticker={false} fileName={`forja-rutina.jpg`} controls={null} />;
+  return <ShareLayout preview={rendered} sticker={false} fileName="forja-rutina.jpg" controls={null} />;
 }
 
 /** Preview on top, options in the middle, actions within thumb reach. */
 function ShareLayout({
   preview,
   sticker,
+  stickerShape = "wide",
   fileName,
   controls,
+  hint,
 }: {
   preview: Rendered | null;
   sticker: boolean;
+  /** The sticker of a session is wide (3:2); an achievement's is square. */
+  stickerShape?: "wide" | "square";
   fileName: string;
   controls: ReactNode;
+  hint?: string;
 }) {
   const t = useTranslations("share");
   const canShareFiles =
@@ -244,7 +333,11 @@ function ShareLayout({
             {preview ? (
               // A blob URL made on the phone: no optimisation to do.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview.url} alt={t("preview")} className={sticker ? "w-full" : "size-full object-cover"} />
+              <img
+                src={preview.url}
+                alt={t("preview")}
+                className={sticker ? (stickerShape === "square" ? "w-full p-4" : "w-full") : "size-full object-cover"}
+              />
             ) : (
               <div className="flex size-full items-center justify-center">
                 <Spinner />
@@ -274,7 +367,7 @@ function ShareLayout({
           </div>
         </div>
         <p className="px-1 text-footnote text-muted-foreground">
-          {sticker ? t("hintSticker") : t("hintStory")} {t("privacy")}
+          {hint ?? (sticker ? t("hintSticker") : t("hintStory"))} {t("privacy")}
         </p>
       </div>
     </>

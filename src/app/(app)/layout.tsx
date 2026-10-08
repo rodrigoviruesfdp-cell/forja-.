@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
+import { AchievementsProvider } from "@/features/achievements/achievements-provider";
 import { useAuth } from "@/features/auth/auth-store";
 import { ProfilePrefsBridge } from "@/features/profile/profile-prefs-bridge";
 import { AppShell } from "@/features/shell/app-shell";
@@ -23,7 +24,9 @@ export default function SignedInLayout({ children }: { children: ReactNode }) {
     <UserDataProvider user={auth.user}>
       <InitialSyncGate>
         <ProfilePrefsBridge />
-        <AppShell>{children}</AppShell>
+        <AchievementsProvider>
+          <AppShell>{children}</AppShell>
+        </AchievementsProvider>
       </InitialSyncGate>
     </UserDataProvider>
   );

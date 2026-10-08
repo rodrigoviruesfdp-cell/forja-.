@@ -3,11 +3,14 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useFormatter, useTranslations } from "use-intl";
 import { sessionSummary } from "@/data/repositories/sessions";
+import type { AchievementIcon, Tone } from "@/domain/achievements/catalog";
 import { dateOf } from "@/domain/dates";
 import { exerciseDisplayName } from "@/domain/exercises/names";
 import { byPosition, rotationLetter, rotationOrder, sportDays } from "@/domain/routines/builder";
 import { type ShareStat, shareStats } from "@/domain/share";
 import type { RoutineDay, Session } from "@/domain/schemas";
+import { toneColor } from "@/features/achievements/badge";
+import { useAchievements, useAchievementText } from "@/features/achievements/use-achievements";
 import { useCatalogNames } from "@/features/exercises/use-exercises";
 import { useRoutineLabels } from "@/features/routines/use-routine-labels";
 import type { RoutineTree } from "@/features/routines/use-routines";
@@ -15,7 +18,7 @@ import { useWeekdayLabels } from "@/features/routines/weekdays";
 import { useSessionFormat } from "@/features/session/use-session-format";
 import { useSportName } from "@/features/sports/use-sport-name";
 import { useUserData } from "@/features/user-data/user-data-context";
-import type { RoutineCard, SessionCard } from "./render";
+import type { AchievementCard, RoutineCard, SessionCard } from "./render";
 
 export interface SessionShare {
   session: Session;
@@ -131,5 +134,37 @@ export function useRoutineCard(tree: RoutineTree | null | undefined): RoutineCar
       sport: day.kind === "sport",
     })),
     more: (count) => t("more", { count }),
+  };
+}
+
+export interface AchievementShare {
+  icon: AchievementIcon;
+  tone: Tone;
+  card: AchievementCard;
+}
+
+/** The image of an achievement you have. Undefined while loading, null if you do not have it. */
+export function useAchievementCard(key: string): AchievementShare | null | undefined {
+  const t = useTranslations("achievements");
+  const tShare = useTranslations("share");
+  const format = useFormatter();
+  const text = useAchievementText();
+  const data = useAchievements();
+  if (!data) return undefined;
+  const entry = data.entries.find((item) => item.achievement.key === key);
+  if (!entry?.row) return null;
+  const { achievement, progress } = entry;
+  const threshold = achievement.tiers[progress.tier - 1] ?? achievement.tiers[0] ?? 1;
+  return {
+    icon: achievement.icon,
+    tone: entry.tone,
+    card: {
+      eyebrow: t("unlocked"),
+      title: text.name(entry),
+      subtitle: [text.level(entry), text.goal(achievement, threshold)].filter(Boolean).join(" · "),
+      date: format.dateTime(new Date(entry.row.unlocked_at), { day: "numeric", month: "long", year: "numeric" }),
+      color: toneColor(entry.tone),
+      photoHint: tShare("photoHint"),
+    },
   };
 }

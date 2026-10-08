@@ -11,6 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { cleanText } from "@/data/repositories/profiles";
 import { finishSession, sessionSummary } from "@/data/repositories/sessions";
 import type { Session } from "@/domain/schemas";
+import { useAchievementCheck } from "@/features/achievements/achievements-provider";
 import { useUserData } from "@/features/user-data/user-data-context";
 import { RpePicker } from "./rpe-picker";
 import { SessionStats } from "./session-stats";
@@ -33,6 +34,7 @@ export function FinishSheet({ open, onOpenChange, session, pending, names, onFin
   const t = useTranslations("session");
   const common = useTranslations("common");
   const { db } = useUserData();
+  const checkAchievements = useAchievementCheck();
   const [rpe, setRpe] = useState<number | null>(session.rpe);
   const [notes, setNotes] = useState(session.notes ?? "");
   const [busy, setBusy] = useState(false);
@@ -45,6 +47,7 @@ export function FinishSheet({ open, onOpenChange, session, pending, names, onFin
     setBusy(false);
     onOpenChange(false);
     onFinished();
+    void checkAchievements();
   }
 
   return (

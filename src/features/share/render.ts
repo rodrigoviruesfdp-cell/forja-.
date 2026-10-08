@@ -177,17 +177,63 @@ function drawSessionText(ctx: CanvasRenderingContext2D, card: SessionCard, botto
   return y - 112 * scale;
 }
 
-function darkBackground(ctx: CanvasRenderingContext2D, width: number, height: number) {
+/** "#ffc300" → "rgba(255, 195, 0, alpha)". */
+function rgba(hex: string, alpha: number): string {
+  const value = Number.parseInt(hex.replace("#", ""), 16);
+  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+}
+
+function darkBackground(ctx: CanvasRenderingContext2D, width: number, height: number, glowColor = YELLOW, at = { x: 0.85, y: 0.12 }) {
   const base = ctx.createLinearGradient(0, 0, 0, height);
   base.addColorStop(0, "#1c1c1e");
   base.addColorStop(1, "#000");
   ctx.fillStyle = base;
   ctx.fillRect(0, 0, width, height);
-  const glow = ctx.createRadialGradient(width * 0.85, height * 0.12, 0, width * 0.85, height * 0.12, width * 0.9);
-  glow.addColorStop(0, "rgba(255, 214, 10, 0.28)");
-  glow.addColorStop(1, "rgba(255, 214, 10, 0)");
+  const glow = ctx.createRadialGradient(width * at.x, height * at.y, 0, width * at.x, height * at.y, width * 0.9);
+  glow.addColorStop(0, rgba(glowColor, 0.28));
+  glow.addColorStop(1, rgba(glowColor, 0));
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
+}
+
+/** The story's background: your photo (cover-cropped, darkened at the bottom) or the dark one. */
+function storyBackground(
+  ctx: CanvasRenderingContext2D,
+  template: Template,
+  photo: Photo | null,
+  photoHint: string,
+  glowColor?: string,
+) {
+  const { width, height } = STORY;
+  if (template === "photo" && photo) {
+    const crop = coverCrop(photo.width, photo.height, width, height);
+    ctx.drawImage(photo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height);
+    const scrim = ctx.createLinearGradient(0, height * 0.42, 0, height);
+    scrim.addColorStop(0, "rgba(0, 0, 0, 0)");
+    scrim.addColorStop(1, "rgba(0, 0, 0, 0.8)");
+    ctx.fillStyle = scrim;
+    ctx.fillRect(0, 0, width, height);
+    const top = ctx.createLinearGradient(0, 0, 0, SAFE_TOP + 120);
+    top.addColorStop(0, "rgba(0, 0, 0, 0.35)");
+    top.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = top;
+    ctx.fillRect(0, 0, width, SAFE_TOP + 120);
+    return;
+  }
+  darkBackground(ctx, width, height, glowColor);
+  if (template === "photo") {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    font(ctx, 44, 600);
+    ctx.textAlign = "center";
+    ctx.fillText(photoHint, width / 2, height * 0.38);
+    ctx.textAlign = "left";
+  }
+}
+
+/** Shadow under white text on photos (sand, snow and sky are bright). */
+function photoTextShadow(ctx: CanvasRenderingContext2D) {
+  ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+  ctx.shadowBlur = 16;
 }
 
 /** A session as a story (with your photo or on a dark background) or as a transparent sticker. */
@@ -205,35 +251,9 @@ export function renderSession(card: SessionCard, template: Template, photo: Phot
 
   const { width, height } = STORY;
   const [element, ctx] = canvas(width, height);
-  if (template === "photo" && photo) {
-    const crop = coverCrop(photo.width, photo.height, width, height);
-    ctx.drawImage(photo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height);
-    const scrim = ctx.createLinearGradient(0, height * 0.42, 0, height);
-    scrim.addColorStop(0, "rgba(0, 0, 0, 0)");
-    scrim.addColorStop(1, "rgba(0, 0, 0, 0.8)");
-    ctx.fillStyle = scrim;
-    ctx.fillRect(0, 0, width, height);
-    const top = ctx.createLinearGradient(0, 0, 0, SAFE_TOP + 120);
-    top.addColorStop(0, "rgba(0, 0, 0, 0.35)");
-    top.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = top;
-    ctx.fillRect(0, 0, width, SAFE_TOP + 120);
-  } else {
-    darkBackground(ctx, width, height);
-    if (template === "photo") {
-      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-      font(ctx, 44, 600);
-      ctx.textAlign = "center";
-      ctx.fillText(card.photoHint, width / 2, height * 0.38);
-      ctx.textAlign = "left";
-    }
-  }
+  storyBackground(ctx, template, photo, card.photoHint);
   ctx.fillStyle = "#fff";
-  if (template === "photo" && photo) {
-    // Keeps the text readable on bright photos (sand, snow, sky).
-    ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
-    ctx.shadowBlur = 16;
-  }
+  if (template === "photo" && photo) photoTextShadow(ctx);
   drawSessionText(ctx, card, height - SAFE_BOTTOM, width - PAD * 2, template === "plain" ? 1.12 : 1);
   drawBrand(ctx, PAD, SAFE_TOP + 40, 52, "#fff");
   return element;
@@ -336,6 +356,117 @@ export function renderRoutine(card: RoutineCard): HTMLCanvasElement {
     ctx.globalAlpha = 1;
   }
   return element;
+}
+
+export interface AchievementCard {
+  /** "Achievement unlocked!" */
+  eyebrow: string;
+  title: string;
+  /** "Level 2 of 4 · 50 gym sessions" */
+  subtitle: string;
+  date: string;
+  /** The level's colour, for the glow. */
+  color: string;
+  photoHint: string;
+}
+
+/** Centred lines of text, each shrunk to fit. */
+function centered(ctx: CanvasRenderingContext2D, text: string, y: number, size: number, minSize: number, weight: number, family = TEXT) {
+  ctx.textAlign = "center";
+  drawFitted(ctx, text, ctx.canvas.width / 2, y, ctx.canvas.width - PAD * 2, size, minSize, weight, family);
+  ctx.textAlign = "left";
+}
+
+/**
+ * An achievement: the medal big in the middle (on the dark background or as a sticker), or
+ * over your photo with the text at the bottom like a session.
+ */
+export function renderAchievement(card: AchievementCard, template: Template, photo: Photo | null, badge: CanvasImageSource | null): HTMLCanvasElement {
+  if (template === "sticker") {
+    const [element, ctx] = canvas(STICKER.width, STICKER.width);
+    ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 4;
+    if (badge) ctx.drawImage(badge, (STICKER.width - 560) / 2, 40, 560, 560);
+    ctx.fillStyle = "#fff";
+    centered(ctx, card.title, 730, 96, 56, 800);
+    ctx.globalAlpha = 0.85;
+    centered(ctx, card.subtitle, 800, 42, 28, 600);
+    centered(ctx, card.date, 860, 34, 26, 500);
+    ctx.globalAlpha = 1;
+    drawBrand(ctx, (STICKER.width - 52 * 3.4) / 2, 1000, 52, "#fff");
+    return element;
+  }
+
+  const { width, height } = STORY;
+  const [element, ctx] = canvas(width, height);
+  storyBackground(ctx, template, photo, card.photoHint, card.color);
+
+  if (template === "photo" && photo) {
+    photoTextShadow(ctx);
+    let y = height - SAFE_BOTTOM;
+    ctx.fillStyle = "#fff";
+    ctx.globalAlpha = 0.75;
+    drawFitted(ctx, card.date, PAD, y, width - PAD * 2, 36, 26, 500);
+    ctx.globalAlpha = 0.9;
+    y -= 60;
+    drawFitted(ctx, card.subtitle, PAD, y, width - PAD * 2, 44, 28, 600);
+    ctx.globalAlpha = 1;
+    y -= 76;
+    drawFitted(ctx, card.title, PAD, y, width - PAD * 2, 108, 60, 800);
+    y -= 124;
+    ctx.fillStyle = YELLOW;
+    drawFitted(ctx, card.eyebrow.toUpperCase(), PAD, y, width - PAD * 2, 36, 26, 700);
+    if (badge) ctx.drawImage(badge, PAD - 8, y - 60 - 300, 300, 300);
+    ctx.fillStyle = "#fff";
+    drawBrand(ctx, PAD, SAFE_TOP + 40, 52, "#fff");
+    return element;
+  }
+
+  // The medal's own glow behind it.
+  const center = { x: width / 2, y: 690 };
+  const halo = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, 520);
+  halo.addColorStop(0, rgba(card.color, 0.45));
+  halo.addColorStop(1, rgba(card.color, 0));
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, width, height);
+  if (badge) {
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 16;
+    ctx.drawImage(badge, center.x - 300, center.y - 300, 600, 600);
+    ctx.restore();
+  }
+  ctx.fillStyle = YELLOW;
+  centered(ctx, card.eyebrow.toUpperCase(), 1150, 38, 26, 700);
+  ctx.fillStyle = "#fff";
+  centered(ctx, card.title, 1270, 112, 60, 800);
+  ctx.globalAlpha = 0.85;
+  centered(ctx, card.subtitle, 1350, 44, 28, 600);
+  ctx.globalAlpha = 0.6;
+  centered(ctx, card.date, 1415, 36, 26, 500);
+  ctx.globalAlpha = 1;
+  drawBrand(ctx, PAD, SAFE_TOP + 40, 52, "#fff");
+  return element;
+}
+
+/** An <svg> (the medal) as an image to draw on the canvas, at `size` pixels. */
+export async function svgToImage(svg: SVGSVGElement, size: number): Promise<HTMLImageElement> {
+  const clone = svg.cloneNode(true) as SVGSVGElement;
+  clone.setAttribute("width", String(size));
+  clone.setAttribute("height", String(size));
+  clone.removeAttribute("class");
+  const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    return image;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export function canvasBlob(element: HTMLCanvasElement, type: "image/jpeg" | "image/png"): Promise<Blob> {

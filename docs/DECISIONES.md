@@ -12,8 +12,8 @@ Documento vivo: se actualiza en cada entrega.
 | 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR. Además: **deporte como código fijo** y un único **"Terminar sesión"** con resumen | ✅ Hecha |
 | 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | ✅ Hecha |
 | 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | ✅ Hecha |
-| 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | Siguiente |
-| 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
+| 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | ✅ Hecha |
+| 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | Siguiente |
 | 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | |
 | 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | |
 
@@ -285,6 +285,21 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
 - **Dónde está:** en la hoja de un deporte (**Compartir**), en el resumen de un entreno terminado (botón y icono arriba) y en el menú **⋯** de una rutina (**Compartir rutina**).
 - Las imágenes se preparan en cuanto cambias algo, para que **Compartir** abra el menú en el mismo toque (iOS solo lo permite justo después de tocar).
 
+### Logros y destacados (1.7)
+
+El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se decidió al construirlo:
+
+- **Esquema** (migración `20261010000100_user_achievements.sql`): tabla **`user_achievements`**, una fila por logro y nivel conseguido, con la sesión que lo consiguió, cuándo lo viste (`seen_at`) y su sitio en destacados (`featured_position`). RLS como el resto y **sin DELETE**: un logro conseguido no se pierde aunque borres sesiones.
+- **El id de cada fila sale de (usuario, logro, nivel)** (un hash): si dos móviles calculan el mismo desbloqueo, escriben la misma fila en vez de duplicarla. Además, la base de datos tiene `unique (user_id, achievement_key, tier)`.
+- **El motor** (`src/domain/achievements`): cada logro es una medida, un filtro y unos niveles. Recorre tus sesiones completadas **en el orden en que pasaron** y apunta, para cada nivel, la sesión que lo alcanzó. Así, un deporte apuntado días después se coloca en su sitio. El progreso ("10 / 50") no se guarda: se calcula.
+- **Cuándo se calcula:** en el móvil, al terminar un entreno o guardar un deporte (sale la animación en ese momento) y una vez al abrir la app, después de la primera sincronización, para que lleguen antes los logros de otro móvil. Lo que ya hiciste antes de la 1.7 se reconoce así la primera vez.
+- **Animación:** a pantalla completa, uno detrás de otro ("1 de 3"), con la medalla entrando con un muelle y un brillo de su color. Al pasarla queda vista, también en tus otros móviles.
+- **Medallas:** dibujadas por la app (SVG): bronce, plata, oro, platino y diamante según el nivel; oro si el logro tiene un solo nivel; gris si aún no lo tienes; "?" si es secreto.
+- **Destacados:** bajo el perfil, como las historias destacadas de Instagram. Sin elegir, los 5 últimos; si destacas alguno, solo los destacados (hasta 8), en el orden en que los elegiste. Anillo de color = hay algo sin ver.
+- **Visor:** a pantalla completa, como una historia: tocar los lados o deslizar para pasar, deslizar abajo para cerrar.
+- **Compartir un logro** usa el generador de la 1.6: foto, fondo oscuro con el brillo de la medalla o pegatina cuadrada (1080 × 1080).
+- **Toneladas** se cuentan en toneladas métricas aunque uses libras.
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
@@ -333,6 +348,11 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
 - **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.
 - **Fase 3 (público):** ver [`docs/SOCIAL.md`](SOCIAL.md). Incluye dominio propio para el correo, plan Vercel Pro, RGPD, moderación y RLS de lectura pública según `visibility`.
+- **Logros (1.7):**
+  - pulir el catálogo juntos: qué logros de surf y boxeo motivan de verdad, nombres y niveles;
+  - estilo de medalla (ahora metálica y dibujada por la app) e ilustraciones hechas a mano;
+  - reordenar los destacados arrastrando (hoy se ordenan por cuándo los destacaste);
+  - "The Search" (lema de Rip Curl) y "Balboa" (Rocky): bien para uso personal; revisarlos antes de abrir a otros.
 - **Compartir (1.6):**
   - probarlo en un iPhone de verdad: el menú de compartir, Instagram → Historia y pegar la pegatina (en el ordenador solo se pudo simular);
   - la pegatina es experimental: si Instagram no la pega, queda **Guardar imagen** y añadirla desde el carrete;

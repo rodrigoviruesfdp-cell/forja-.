@@ -11,6 +11,7 @@ import {
   sessionExerciseSchema,
   sessionSchema,
   sessionSetSchema,
+  userAchievementSchema,
 } from "@/domain/schemas";
 
 /**
@@ -28,6 +29,7 @@ export const SYNC_TABLES = [
   "sessions",
   "session_exercises",
   "session_sets",
+  "user_achievements",
   "body_metrics",
   "goals",
 ] as const;
@@ -44,6 +46,7 @@ export const TABLE_SCHEMAS = {
   sessions: sessionSchema,
   session_exercises: sessionExerciseSchema,
   session_sets: sessionSetSchema,
+  user_achievements: userAchievementSchema,
   body_metrics: bodyMetricSchema,
   goals: goalSchema,
 } satisfies Record<SyncTable, z.ZodType>;

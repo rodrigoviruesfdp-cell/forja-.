@@ -24,6 +24,8 @@ export class SyncRunner {
   private readonly listeners = new Set<() => void>();
   private readonly cleanups: (() => void)[] = [];
   private debounce: ReturnType<typeof setTimeout> | null = null;
+  /** When this runner was created (the app launch): a sync after it brought fresh data. */
+  readonly startedAt = new Date().toISOString();
 
   constructor(
     private readonly engine: SyncEngine,
