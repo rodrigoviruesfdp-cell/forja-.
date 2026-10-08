@@ -14,7 +14,7 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 > - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
-> Calendario y Progreso son de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md).
+> Calendario y Progreso son de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md) y el de los logros en [docs/LOGROS.md](docs/LOGROS.md).
 >
 > **Tu instalación ya está hecha:** proyecto Supabase `forja`, proyecto Vercel `forja` y app en <https://forja-gilt-six.vercel.app>. Los pasos 2 a 7 sirven solo si alguna vez hay que montarlo desde cero.
 
@@ -309,6 +309,7 @@ supabase/
   functions/      Edge Function que carga el catálogo de ejercicios
 docs/DECISIONES.md  Decisiones tomadas y pendientes
 docs/SOCIAL.md      Diseño de la futura Comunidad
+docs/LOGROS.md      Diseño de los logros y destacados
 ```
 
 ## 12. Licencias y créditos

@@ -9,10 +9,51 @@ Documento vivo: se actualiza en cada entrega.
 | 1.1 | Cimientos: app instalable, login, perfil, idioma, unidades, base de datos completa con RLS, sincronización sin conexión | ✅ Hecha |
 | 1.2 | Catálogo de ejercicios (free-exercise-db traducido), buscador con filtros, ejercicios propios; base de la Comunidad | ✅ Hecha |
 | 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas. Además: rediseño al estilo iOS | ✅ Hecha |
-| 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR | Siguiente |
-| 1.5 | Otros deportes y calendario mensual con estados y racha | |
-| 1.6 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
-| 1.7 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | |
+| 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR. Además: **deporte como código fijo** y un único **"Terminar sesión"** con resumen | En curso |
+| 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | |
+| 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | |
+| 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | |
+| 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
+| 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | |
+| 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | |
+
+Las gráficas pasan de la 1.6 a la 1.8: la 1.4 ya enseña "la última vez" y los récords en el gimnasio, las gráficas necesitan semanas de datos, y compartir y los logros aprovechan lo registrado desde el primer día (los logros también se calculan hacia atrás).
+
+Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y compartir dentro de la app, ver [`SOCIAL.md`](SOCIAL.md)).
+
+## Ideas evaluadas (octubre 2026)
+
+| Idea | Decisión | Dónde |
+|---|---|---|
+| 1 vs 1 con sticker para Instagram | Se convierte en **"entrenar juntos"**: amigos que estaban en el mismo sitio el mismo día, con un duelo opcional. La imagen de tu propia sesión llega antes (1.6). | 1.6 y Fase 3 (3.3, 3.4) |
+| Subir la rutina con fotos de progresión | Se separa: **fotos de progreso privadas** (1.9) e **imagen de la rutina** (1.6); publicar rutina o transformación dentro de la app es Fase 3 (3.2). Las fotos solo salen del móvil si publicas una transformación. | 1.6, 1.9 y 3.2 |
+| Logros tipo videojuego en el perfil | Funcionan con un solo usuario. Fila de **destacados** bajo el perfil, como en Instagram. | 1.7 |
+
+### Decisiones tomadas ahora para no rehacer nada después
+
+1. **Deporte como código fijo** (`surf`, `boxing`…) y nombre libre solo para "otro" (1.4). Antes se guardaba el nombre traducido ("Fútbol"), y con sesiones en dos idiomas no se podrían contar "200 días de boxeo".
+2. **Spots:** tabla propia de cada usuario (nombre; coordenadas cuando llegue el mapa) enlazada a la sesión (1.5). Una sesión de surf sin spot nunca contaría para un logro de spots.
+3. **Datos propios de cada deporte** (olas, asaltos, mejor ola…) en un único campo flexible que la app valida según el deporte (1.5), en vez de una columna por deporte.
+4. **Un único "Terminar sesión"** que calcula el resumen (duración, volumen, récords). De él cuelgan la pantalla final y, más adelante, los logros, la imagen para compartir y los grupos (1.4).
+5. **Publicar es hacer una copia** (tabla `posts` con lo que eliges mostrar). Nadie lee tus tablas privadas; `sessions.visibility` se queda sin usar (Fase 3).
+6. **Una sola tabla `media`** y una carpeta privada por usuario para todas las fotos; los originales nunca son públicos (1.9).
+7. **Amigos:** os seguís los dos, con aceptación; cuentas solo por invitación, sin registro abierto (Fase 3).
+8. **Sin "sistema de eventos" aparte:** las sesiones ya registran todo; logros, feed y duelos se calculan a partir de ellas.
+
+### Lo que no se construye todavía
+
+| Qué | Por qué |
+|---|---|
+| 1 vs 1 con desconocidos o rankings públicos | Los datos no se pueden verificar: ganaría quien más mienta, y exige moderación |
+| Botón directo "pegatina en historia" como el de Strava | Instagram solo lo permite a apps nativas |
+| Mapa y catálogo mundial de spots | De momento basta el nombre; un catálogo compartido obliga a fusionar duplicados y moderar |
+| Importar de Strava o Apple Salud | Caro; una web no puede leer Apple Salud |
+| Cifrar las fotos de forma que ni el servidor pueda verlas | Complica miniaturas y varios móviles; basta con almacenamiento privado |
+| Detección automática de desnudos | Solo si se abre al público |
+| Logros calculados en el servidor | Solo cuando sean visibles para otros (Fase 3) |
+| Duelos en directo durante la sesión | Exige red en el gimnasio y tiempo real; el resumen al final da casi lo mismo |
+| Animaciones complejas o insignias 3D | Primero insignias dibujadas por la app y animadas con Motion |
+| Contadores que se van sumando para los logros | Se descuadran al editar o borrar; recalcular lo afectado es barato |
 
 ## Decisiones tomadas
 
