@@ -6,7 +6,7 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.7.** Ya funcionan:
+> **Estado: entrega 1.8.** Ya funcionan:
 > - el login, el perfil y las preferencias;
 > - la sincronización sin conexión y la app instalable;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
@@ -15,10 +15,11 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 > - los **deportes** (también de días pasados) con su spot y lo que cuentan (olas, asaltos, vías…), y el **calendario** con tu racha de semanas;
 > - **compartir en Instagram**: una imagen de tu sesión (con tu foto y los datos encima, o sobre fondo oscuro), una pegatina transparente y la imagen de tu rutina;
 > - los **logros**: medallas con niveles que se consiguen entrenando, una animación al desbloquearlas y una fila de **destacados** bajo tu perfil, como en Instagram;
+> - el **progreso**: tiempo y carga por semana, series por músculo, la evolución de cada ejercicio (1RM estimado, peso, volumen o repeticiones), tus últimos récords y tus deportes;
 > - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
-> Progreso es de momento un aviso de "próximamente". El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md) y el de los logros en [docs/LOGROS.md](docs/LOGROS.md).
+> El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md) y el de los logros en [docs/LOGROS.md](docs/LOGROS.md).
 >
 > **Tu instalación ya está hecha:** proyecto Supabase `forja`, proyecto Vercel `forja` y app en <https://forja-gilt-six.vercel.app>. Los pasos 2 a 7 sirven solo si alguna vez hay que montarlo desde cero.
 
@@ -184,6 +185,25 @@ Para que el enlace del correo lleve a tu app:
 A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez descarga tus datos; después abre al instante, también sin cobertura.
 
 ## 9. Cómo probar las entregas
+
+### Entrega 1.8: progreso
+
+1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
+2. **Pestaña Progreso** (abajo). Arriba eliges el **periodo**: 4 semanas, 3 meses, 1 año o todo. Todo lo de la pantalla sigue a ese periodo.
+3. **Las cifras:** sesiones, tiempo, volumen (kilos movidos) y récords. Debajo, cuánto cambian respecto al periodo anterior (si en ese periodo ya entrenabas).
+4. **Entrenamiento por semana:** columnas con el gimnasio en azul y el deporte en naranja.
+   - Toca una columna (o desliza el dedo) y arriba ves esa semana: gimnasio, deporte y total. Sin tocar, sale tu media.
+   - **Carga** = minutos × esfuerzo: una hora suave pesa menos que una hora a tope. Las sesiones sin esfuerzo apuntado no cuentan (te dice cuántas).
+   - Con **1 año** o **Todo** (si es largo), las columnas pasan a ser meses.
+   - **Ver datos** enseña los números en una tabla.
+5. **Series por músculo:** cuántas series de trabajo haces a la semana, de media, de cada músculo.
+6. **Ejercicios:** cada ejercicio con su tendencia. Tócalo para ver su gráfica:
+   - **1RM** (lo que podrías levantar una vez, estimado con tu mejor serie de hasta 12 repeticiones), **Peso** máximo o **Volumen**; en ejercicios sin peso, las **repeticiones**;
+   - los puntos rojos son récords; desliza el dedo por la línea para ver cada sesión;
+   - debajo, todas tus sesiones de ese ejercicio con su mejor serie.
+7. **Últimos récords** y **Deportes** (sesiones, tiempo, km, olas…) del periodo.
+8. **Desde la biblioteca:** en un ejercicio que ya hayas hecho, **Ver mi progreso**.
+9. **Sin conexión:** todo funciona igual.
 
 ### Entrega 1.7: logros y destacados
 
@@ -377,8 +397,8 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 ```
 src/
   app/            Rutas de Next.js: solo montan pantallas
-  features/       Pantallas y hooks por funcionalidad (achievements, auth, calendar, profile, routines, session, share, sports, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir, el motor de logros… Sin React ni Supabase
+  features/       Pantallas y hooks por funcionalidad (achievements, auth, calendar, profile, progress, routines, session, share, sports, shell…)
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir, el motor de logros, las cifras de progreso… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)

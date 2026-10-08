@@ -36,6 +36,9 @@
   --pr: #ff3b30;
   --streak: #ff9500;
   --planned: #007aff;
+  /* Charts (validated for colour blindness, see DECISIONES "Progreso"): 1 = gym, 2 = sports. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
   --destructive: #ff3b30;
 
   --elevation-card: 0 8px 30px rgb(0 0 0 / 0.06);
@@ -83,6 +86,8 @@
   --pr: #ff453a;
   --streak: #ff9f0a;
   --planned: #0a84ff;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
   --destructive: #ff453a;
 
   --elevation-card: 0 8px 30px rgb(0 0 0 / 0.35);
@@ -108,6 +113,8 @@
   --color-streak: var(--streak);
   --color-pr: var(--pr);
   --color-planned: var(--planned);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
   --color-destructive: var(--destructive);
 
   --radius-xs: 6px;

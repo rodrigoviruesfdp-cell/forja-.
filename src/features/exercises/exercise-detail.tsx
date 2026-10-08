@@ -1,13 +1,14 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { ChartLine, Pencil } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Card } from "@/components/ui/card";
-import { Group, GroupRow, GroupRowButton } from "@/components/ui/group";
+import { Group, GroupRow, GroupRowButton, GroupRowLink } from "@/components/ui/group";
 import { IconLink } from "@/components/ui/icon-button";
 import { Spinner } from "@/components/ui/spinner";
 import { saveRows } from "@/data/local/mutations";
@@ -41,6 +42,12 @@ export function ExerciseDetail() {
   const labels = useExerciseLabels();
   const { locale } = usePrefs();
   const { db, user } = useUserData();
+  // Done at least once: link to its progress.
+  const timesDone = useLiveQuery(
+    () => (id ? db.session_exercises.where("exercise_id").equals(id).filter((item) => !item.deleted_at).count() : 0),
+    [db, id],
+    0,
+  );
 
   if (exercise === undefined) {
     return (
@@ -117,6 +124,17 @@ export function ExerciseDetail() {
             {exercise.mechanic ? <FactRow label={t("mechanic")}>{labels.mechanic(exercise.mechanic)}</FactRow> : null}
           </Group>
         </StaggerItem>
+
+        {timesDone > 0 ? (
+          <StaggerItem>
+            <Group>
+              <GroupRowLink href={`/progress/exercise?id=${exercise.id}`} data-nav="forward" className="font-medium text-planned">
+                <ChartLine className="size-5" strokeWidth={2.2} />
+                {t("seeProgress")}
+              </GroupRowLink>
+            </Group>
+          </StaggerItem>
+        ) : null}
 
         <StaggerItem>
           <Group

@@ -13,8 +13,8 @@ Documento vivo: se actualiza en cada entrega.
 | 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | ✅ Hecha |
 | 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | ✅ Hecha |
 | 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | ✅ Hecha |
-| 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | Siguiente |
-| 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | |
+| 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | ✅ Hecha |
+| 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | Siguiente |
 | 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | |
 
 Las gráficas pasan de la 1.6 a la 1.8: la 1.4 ya enseña "la última vez" y los récords en el gimnasio, las gráficas necesitan semanas de datos, y compartir y los logros aprovechan lo registrado desde el primer día (los logros también se calculan hacia atrás).
@@ -300,6 +300,25 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
 - **Compartir un logro** usa el generador de la 1.6: foto, fondo oscuro con el brillo de la medalla o pegatina cuadrada (1080 × 1080).
 - **Toneladas** se cuentan en toneladas métricas aunque uses libras.
 
+### Progreso (1.8)
+
+- **Sin cambios en la base de datos:** todo se calcula en el móvil a partir de las sesiones completadas y sus series de trabajo (`src/domain/progress`). Funciona sin conexión.
+- **Periodo** (4 semanas, 3 meses, 1 año, todo): semanas enteras de lunes a domingo hasta la actual. "Todo" empieza en la semana de tu primera sesión. Todo lo de la pantalla sigue al periodo elegido.
+- **Cifras:** sesiones, tiempo, volumen (kilos × repeticiones de las series de trabajo) y récords. La comparación con el periodo anterior (los mismos días justo antes) solo sale si en ese periodo ya había sesiones, y es neutra (sin verde ni rojo): una semana de descarga no es "peor".
+- **Entrenamiento por semana:** columnas apiladas, gimnasio y deporte. Con más de 26 semanas, por meses. Dos medidas que se eligen, nunca dos ejes a la vez:
+  - **tiempo** (minutos);
+  - **carga** = minutos × esfuerzo (la "carga de sesión", RPE 1–10). Las sesiones sin esfuerzo no cuentan, y se dice cuántas, en vez de inventarles un valor.
+- **Series por músculo:** series de trabajo a la semana, de media, por el músculo **principal** de cada ejercicio (el estándar habitual para medir volumen; los músculos secundarios no suman).
+- **Cada ejercicio:** un punto por sesión con su mejor valor:
+  - **1RM estimado** (Epley, solo series de hasta 12 repeticiones, como los récords), **peso máximo** o **volumen**;
+  - sin peso añadido (dominadas, fondos), **repeticiones** (la serie con más);
+  - los récords en rojo; la gráfica se dibuja en la unidad del usuario para que el eje caiga en números redondos también en libras.
+- **Gráficas propias en SVG** (`src/components/charts`), sin librerías: pesan poco, funcionan sin conexión y siguen el diseño de la app. Reglas:
+  - colores comprobados para daltonismo con el validador de la guía de visualización: azul `#2a78d6`/`#3987e5` (gimnasio) y naranja `#eb6834`/`#d95926` (deporte), tokens `--chart-1` y `--chart-2`;
+  - líneas de 2 px, columnas finas con la punta redondeada, rejilla fina, ejes con números redondos;
+  - al tocar, los datos salen **en una línea fija encima de la gráfica** (como la app Salud), no en una etiqueta flotante que tape los botones; también con las flechas del teclado;
+  - cada gráfica de columnas tiene **Ver datos** (una tabla), para que ningún dato dependa de tocar.
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
@@ -348,6 +367,9 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
 - **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.
 - **Fase 3 (público):** ver [`docs/SOCIAL.md`](SOCIAL.md). Incluye dominio propio para el correo, plan Vercel Pro, RGPD, moderación y RLS de lectura pública según `visibility`.
+- **Progreso (1.8):**
+  - las sesiones de ejemplo para estrenar las gráficas llegan con la 1.10;
+  - más adelante: elegir qué ejercicios seguir de cerca, objetivos (la tabla `goals` ya existe) y la carga semanal comparada con la media de las 4 semanas anteriores.
 - **Logros (1.7):**
   - pulir el catálogo juntos: qué logros de surf y boxeo motivan de verdad, nombres y niveles;
   - estilo de medalla (ahora metálica y dibujada por la app) e ilustraciones hechas a mano;
