@@ -59,7 +59,10 @@ export function useRoutineTree(routineId: string | null): RoutineTree | null | u
   }, [db, routineId]);
 }
 
-/** The id of the last gym day of `routine` you completed (drives the rotation). */
+/**
+ * The last gym day of the routine you trained (drives the rotation). A session in progress
+ * counts: once you start day B, the next one is C.
+ */
 export function useLastGymDayId(days: readonly RoutineDay[] | undefined): string | null | undefined {
   const { db } = useUserData();
   const ids = (days ?? []).filter((day) => day.kind === "gym").map((day) => day.id);
@@ -69,9 +72,10 @@ export function useLastGymDayId(days: readonly RoutineDay[] | undefined): string
     const sessions = await db.sessions
       .where("routine_day_id")
       .anyOf(ids)
-      .filter((session) => !session.deleted_at && session.status === "completed")
+      .filter((session) => !session.deleted_at && (session.status === "completed" || session.status === "in_progress"))
       .toArray();
-    sessions.sort((a, b) => b.date.localeCompare(a.date) || (b.ended_at ?? "").localeCompare(a.ended_at ?? ""));
+    const at = (session: (typeof sessions)[number]) => session.started_at ?? session.ended_at ?? session.created_at;
+    sessions.sort((a, b) => b.date.localeCompare(a.date) || at(b).localeCompare(at(a)));
     return sessions[0]?.routine_day_id ?? null;
   }, [db, key]);
 }

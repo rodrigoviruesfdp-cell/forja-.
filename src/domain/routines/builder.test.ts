@@ -91,7 +91,7 @@ describe("routines and days", () => {
     expect(routineDaySchema.parse(gym)).toMatchObject({ weekday: null, position: 0, sport: null });
 
     const sport = newDay(r, [gym], { kind: "sport", name: "Fútbol", sport: "Fútbol", weekday: 2 }, clock);
-    expect(sport).toMatchObject({ kind: "sport", sport: "Fútbol", weekday: 2, position: 1 });
+    expect(sport).toMatchObject({ kind: "sport", name: "Fútbol", sport: "football", weekday: 2, position: 1 });
 
     const exercise = newRoutineExercise(gym, [], "cccccccc-0000-4000-8000-000000000009", clock);
     expect(routineExerciseSchema.parse(exercise)).toMatchObject({ target_sets: 3, target_reps_min: 8, target_reps_max: 12 });
@@ -102,9 +102,14 @@ describe("routines and days", () => {
     expect(gym.weekday).toBe(0);
   });
 
-  it("a sport day always has a sport (the database requires it)", () => {
+  it("a sport day always has a sport (the database requires it), stored as its code", () => {
     const sport = newDay(routine(), [], { kind: "sport", name: "Pádel", weekday: 3 }, testClock());
-    expect(sport.sport).toBe("Pádel");
+    expect(sport).toMatchObject({ name: "Pádel", sport: "padel" });
+  });
+
+  it("keeps a sport that is not in the list as typed", () => {
+    const sport = newDay(routine(), [], { kind: "sport", name: "", sport: " Surf de remo ", weekday: 3 }, testClock());
+    expect(sport).toMatchObject({ name: "Surf de remo", sport: "Surf de remo" });
   });
 
   it("lays a weekly routine out Monday to Sunday", () => {

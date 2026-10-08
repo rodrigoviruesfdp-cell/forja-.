@@ -51,6 +51,12 @@ describe("rotation", () => {
     expect(plan.upcoming).toMatchObject({ day: a, inDays: 1 });
   });
 
+  it("once today's gym day is started or done, the next one waits for the next training day", () => {
+    const plan = planForDate(r, days, MONDAY, c.id, { gymDoneToday: true });
+    expect(plan.today).toEqual([]);
+    expect(plan.upcoming).toMatchObject({ day: a, inDays: 1 });
+  });
+
   it("pinned sports show on their weekday and the gym day waits", () => {
     const plan = planForDate(r, days, WEDNESDAY, null);
     expect(plan.today).toEqual([football]);

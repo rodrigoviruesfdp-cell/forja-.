@@ -9,8 +9,8 @@ Documento vivo: se actualiza en cada entrega.
 | 1.1 | Cimientos: app instalable, login, perfil, idioma, unidades, base de datos completa con RLS, sincronización sin conexión | ✅ Hecha |
 | 1.2 | Catálogo de ejercicios (free-exercise-db traducido), buscador con filtros, ejercicios propios; base de la Comunidad | ✅ Hecha |
 | 1.3 | Constructor de rutinas: semanal o rotación A/B/C/D, deportes fijos, arrastrar o "+", reordenar, duplicar días, varias rutinas. Además: rediseño al estilo iOS | ✅ Hecha |
-| 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR. Además: **deporte como código fijo** y un único **"Terminar sesión"** con resumen | En curso |
-| 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | |
+| 1.4 | Sesión en vivo: serie en ≤3 toques, "la última vez", calentamiento, notas, PR, offline; tests de 1RM y PR. Además: **deporte como código fijo** y un único **"Terminar sesión"** con resumen | ✅ Hecha |
+| 1.5 | Otros deportes (también con fecha pasada), **spots**, **datos propios de cada deporte** (olas, asaltos…), calendario mensual con estados y racha | Siguiente |
 | 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | |
 | 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | |
 | 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | |
@@ -182,7 +182,7 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
   - **Cambio semanal ↔ rotación:** al pasar a rotación, los días de gimnasio conservan su orden y sus días de la semana pasan a "días que sueles entrenar". Al volver a semanal, se reparten en esos días y los que sobran quedan en "Sin día asignado".
   - **Plan del día** (`plan.ts`): qué toca hoy y qué viene después.
   - **Plantillas** (`templates.ts`): "A/B/C/D + deporte" (tu forma de entrenar) y "Full body 3 días", con ejercicios reales del catálogo. Un test comprueba que todos existen.
-- **Rotación:** toca el día siguiente al último **completado** (las sesiones llegan en la 1.4; hasta entonces es el A). Los días de gimnasio no tienen día de la semana; los deportes pueden fijarse a uno. Con "días que sueles entrenar" vacío, cualquier día vale.
+- **Rotación:** toca el día siguiente al último **empezado o completado** (desde la 1.4; sin sesiones, el A). Los días de gimnasio no tienen día de la semana; los deportes pueden fijarse a uno. Con "días que sueles entrenar" vacío, cualquier día vale.
 - **Semanal:** cada día tiene su día de la semana; puede haber dos el mismo día (gimnasio + deporte).
 - **Repeticiones:** fijas (5) o rango para doble progresión (8–12). Subir el mínimo por encima del máximo arrastra el máximo, y al revés.
 - **Escrituras atómicas:** `saveChanges` guarda varias tablas en una sola transacción (rutina + días + ejercicios + perfil), con su cola de subida.
@@ -190,9 +190,45 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
 - **Arrastrar:** solo desde el asa ⠿, para no bloquear el scroll. Se guarda al soltar, no en cada hueco. Para mover un ejercicio a otro día se usa **Mover a otro día**: arrastrar entre días en un móvil, con la página desplazándose, falla demasiado. Por accesibilidad, **Subir/Bajar** hacen lo mismo que arrastrar.
 - **La primera rutina que creas pasa a ser la activa.** Al borrar la activa, no queda ninguna activa.
 
+### Sesión en vivo (1.4)
+
+- **Solo se guardan las series hechas.** Las que faltan se calculan a partir del objetivo del ejercicio, que se copia de la rutina al empezar (`session_exercises.target_sets`). Si paras antes, no queda nada que limpiar, y cada serie es una sola escritura. **+ Serie** sube el objetivo de esa sesión, sin tocar la rutina.
+- **Una serie en uno a tres toques:**
+  - la fila ya viene rellenada, así que un toque en su círculo la registra;
+  - para cambiar algo: tocar la fila, ajustar con − / + y **Registrar serie**;
+  - si no hay nada que proponer (primera vez), el círculo abre la hoja.
+- **Qué se propone en cada fila:**
+  - mientras repites lo de la última vez, las series siguientes de la última vez (también en pirámide);
+  - en cuanto cambias algo, tu última serie se arrastra a las siguientes;
+  - la primera vez, sin peso y con el mínimo de repeticiones del objetivo.
+
+  **Copiar** (en "Última vez") rellena las filas pendientes con lo de la última vez.
+- **Botones de peso:** 2,5 kg o 5 lb (un par de discos pequeños). Cualquier otro peso se escribe.
+- **"La última vez"** es la última sesión **terminada** con ese ejercicio. La sesión en curso no cuenta.
+- **Calentamientos:** no cuentan para el objetivo de series, el volumen ni los récords.
+- **Récords (PR):**
+  - una serie es récord si supera a todas las anteriores de ese ejercicio en **peso**, en **1RM estimado** (Epley) o, sin peso añadido (dominadas, fondos), en **repeticiones**;
+  - el 1RM solo se estima hasta **12 repeticiones**: una serie larga y ligera no puede ser "récord" frente a una pesada de 5;
+  - **la primera sesión de un ejercicio fija la referencia** y nunca tiene récords; si no, cada ejercicio nuevo llenaría el resumen de récords falsos;
+  - `is_pr` se recalcula con todo el historial del ejercicio cada vez que se añade, cambia o borra una serie, porque eso puede cambiar series posteriores.
+- **"Terminar sesión"** es una sola función (`finishSession`):
+  - cierra la sesión y quita los ejercicios sin ninguna serie;
+  - calcula la duración. Si la última serie es de hace más de 30 minutos, se te olvidó terminar y la sesión acaba en esa serie;
+  - devuelve el resumen: duración, volumen, series, ejercicios y récords.
+
+  El esfuerzo (RPE 1–10) es opcional y de un toque; servirá para la carga semanal (minutos × RPE). Los logros y la imagen para compartir colgarán de este mismo punto.
+- **Un entreno a la vez.** Uno empezado cuenta para la rotación: al empezar el B, lo siguiente es el C. Si hoy ya empezaste o terminaste un día de gimnasio de la rutina, el hueco de hoy está usado y lo siguiente pasa al próximo día de entreno.
+- **Cambiar un ejercicio** por otro solo se puede antes de registrar series. Con series, se quita y se añade otro, para no mezclar el historial de dos ejercicios.
+- **Durante el entreno, la barra de abajo** pasa a ser la del entreno: duración, descanso desde la última serie y **Terminar**. En las demás pantallas, una cápsula encima de la barra lleva de vuelta.
+- **Descanso sin alarma:** con la pantalla bloqueada, una app web no puede avisar de forma fiable (sobre todo en iPhone). Se muestra el tiempo desde la última serie.
+- **Un entreno terminado se puede corregir** en el mismo sitio: series, ejercicios o borrarlo. Se abre desde **Hecho hoy**; los días pasados, desde el calendario (1.5).
+- **Deporte como código fijo** (migración `20261008000300_sport_keys.sql`): `routine_days.sport` y `sessions.sport` guardan `football`, `boxing`, `surf`… El nombre traducido sale de los textos de la app. Un deporte que no está en la lista se guarda tal como lo escribiste. La migración convirtió los nombres que ya había ("Fútbol" → `football`).
+- El buscador de ejercicios es el mismo para rutinas y entrenos (`src/features/exercises/exercise-picker.tsx`).
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
+  - `20261008000300_sport_keys.sql` (1.4) solo convierte datos. En producción la herramienta de migraciones no respondía, así que el cambio se hizo con una actualización directa (el único deporte, "Surf", pasó a `surf`) y no figura en el historial de migraciones del servidor. El archivo se puede volver a ejecutar sin efecto.
 - **Vercel:** proyecto `forja` conectado al repositorio de GitHub. Cada `push` publica sola la app en <https://forja-gilt-six.vercel.app>. Las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ya están configuradas.
 
 ### Diseño visual (desde la 1.3, según las Human Interface Guidelines de Apple)
@@ -237,4 +273,8 @@ Después: **Fase 2** (coach IA, solo cuando se pida) y **Fase 3** (amigos y comp
 - **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.
 - **Fase 3 (público):** ver [`docs/SOCIAL.md`](SOCIAL.md). Incluye dominio propio para el correo, plan Vercel Pro, RGPD, moderación y RLS de lectura pública según `visibility`.
+- **Entreno (1.4):**
+  - el RPE por serie existe en la base de datos, pero no tiene pantalla: no compensa el toque extra;
+  - si una máquina va de 1 en 1 kg, el peso se escribe (el paso de los botones podría ser configurable más adelante);
+  - el mismo entreno abierto en dos móviles a la vez: gana el último cambio de cada serie.
 - **Passkeys (Face ID / huella):** Supabase empieza a soportarlas. Serían el login ideal para la app instalada; revisar cuando estén disponibles en el plan gratuito.

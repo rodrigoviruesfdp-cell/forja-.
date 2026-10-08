@@ -11,22 +11,10 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { addDay, updateDay } from "@/data/repositories/routines";
 import type { DayKind, Weekday } from "@/domain/routines/builder";
 import type { Routine, RoutineDay } from "@/domain/schemas";
+import { canonicalSport, SPORT_KEYS } from "@/domain/sports";
+import { useSportName } from "@/features/sports/use-sport-name";
 import { useUserData } from "@/features/user-data/user-data-context";
 import { useWeekdayLabels, WeekdayPicker } from "./weekdays";
-
-const SPORT_KEYS = [
-  "football",
-  "padel",
-  "running",
-  "cycling",
-  "swimming",
-  "basketball",
-  "tennis",
-  "climbing",
-  "yoga",
-  "boxing",
-  "hiking",
-] as const;
 
 export type DaySheetMode =
   | { type: "new"; kind: DayKind; weekday: Weekday | null }
@@ -74,13 +62,15 @@ function DayForm({
 }) {
   const t = useTranslations("routines");
   const common = useTranslations("common");
+  const tSports = useTranslations("sports");
+  const sportName = useSportName();
   const weekdays = useWeekdayLabels();
   const { db } = useUserData();
   const existing = mode.type === "edit" ? mode.day : null;
 
   const [kind, setKind] = useState<DayKind>(existing?.kind ?? (mode.type === "new" ? mode.kind : "gym"));
   const [name, setName] = useState(existing?.kind === "gym" ? existing.name : "");
-  const [sport, setSport] = useState(existing?.sport ?? "");
+  const [sport, setSport] = useState(sportName(existing?.sport));
   const weekly = routine.schedule_type === "weekly";
   const initialWeekday = (existing ? existing.weekday : mode.type === "new" ? mode.weekday : null) as Weekday | null;
   const [weekday, setWeekday] = useState<Weekday | null>(initialWeekday ?? (weekly ? 0 : null));
@@ -136,13 +126,14 @@ function DayForm({
           />
           <GroupRow className="flex-wrap gap-2 py-3">
             {SPORT_KEYS.map((key) => {
-              const label = t(`sports.${key}`);
+              const label = tSports(key);
+              const on = canonicalSport(sport) === key;
               return (
                 <Chip
                   key={key}
                   className="h-9 px-3.5 text-footnote"
-                  active={sport === label}
-                  aria-pressed={sport === label}
+                  active={on}
+                  aria-pressed={on}
                   onClick={() => setSport(label)}
                 >
                   {label}

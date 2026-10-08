@@ -26,7 +26,7 @@ interface TemplateExercise {
 }
 
 interface TemplateDay {
-  /** Translation key under routines.templates.days (gym) or routines.sports (sport). */
+  /** Translation key under routines.templates.days (gym), or the sport code (sport). */
   key: string;
   kind: DayKind;
   weekday?: Weekday;
@@ -173,7 +173,7 @@ export function instantiateTemplate(
     const day = newDay(
       routine,
       days,
-      { kind: spec.kind, name, sport: spec.kind === "sport" ? name : null, weekday: spec.weekday ?? null },
+      { kind: spec.kind, name, sport: spec.kind === "sport" ? spec.key : null, weekday: spec.weekday ?? null },
       clock,
     );
     days.push(day);

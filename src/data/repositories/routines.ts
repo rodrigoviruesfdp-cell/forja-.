@@ -5,6 +5,7 @@ import {
   clampWeeklyTarget,
   cleanName,
   convertSchedule,
+  daySport,
   dayWeekday,
   duplicateDay,
   duplicateRoutine,
@@ -163,10 +164,10 @@ export async function updateDay(
   day: RoutineDay,
   patch: { name?: string; sport?: string; weekday?: Weekday | null; notes?: string | null },
 ): Promise<void> {
-  const sport = day.kind === "sport" ? cleanName(patch.sport ?? day.sport ?? "", LIMITS.sport, day.name) : null;
+  const sport = daySport(day.kind, patch.sport ?? day.sport, day.name);
   const next: RoutineDay = {
     ...day,
-    name: patch.name === undefined ? day.name : cleanName(patch.name, LIMITS.dayName, sport ?? day.name),
+    name: patch.name === undefined ? day.name : cleanName(patch.name, LIMITS.dayName, patch.sport ?? day.name),
     sport,
     weekday: patch.weekday === undefined ? day.weekday : dayWeekday(routine, day.kind, patch.weekday),
     notes: patch.notes === undefined ? day.notes : patch.notes,

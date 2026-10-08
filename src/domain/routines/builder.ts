@@ -3,6 +3,7 @@
  * Nothing here touches the database: the repository saves what these return.
  */
 import type { Routine, RoutineDay, RoutineExercise } from "../schemas";
+import { canonicalSport } from "../sports";
 
 export type ScheduleType = Routine["schedule_type"];
 export type DayKind = RoutineDay["kind"];
@@ -145,15 +146,20 @@ export function dayWeekday(routine: Pick<Routine, "schedule_type">, kind: DayKin
   return weekday ?? null;
 }
 
+/** What the sport field of a day stores: the sport's code, or the typed name if it is not a known sport. */
+export function daySport(kind: DayKind, sport: string | null | undefined, fallback: string): string | null {
+  return kind === "sport" ? canonicalSport(cleanName(sport ?? "", LIMITS.sport, fallback)) : null;
+}
+
 export function newDay(routine: Routine, siblings: readonly RoutineDay[], input: NewDayInput, clock: Clock): RoutineDay {
-  const sport = input.kind === "sport" ? cleanName(input.sport ?? "", LIMITS.sport, input.name) : null;
+  const sportName = input.kind === "sport" ? cleanName(input.sport ?? "", LIMITS.sport, input.name) : null;
   return {
     id: clock.newId(),
     user_id: routine.user_id,
     routine_id: routine.id,
-    name: cleanName(input.name, LIMITS.dayName, sport ?? "Día"),
+    name: cleanName(input.name, LIMITS.dayName, sportName ?? "Día"),
     kind: input.kind,
-    sport,
+    sport: daySport(input.kind, sportName, input.name),
     weekday: dayWeekday(routine, input.kind, input.weekday),
     position: nextPosition(siblings),
     notes: null,

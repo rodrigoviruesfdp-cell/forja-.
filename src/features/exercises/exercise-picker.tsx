@@ -7,36 +7,36 @@ import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
-import { addExercises } from "@/data/repositories/routines";
 import { buildSearchIndex, EMPTY_FILTERS, searchExercises } from "@/domain/exercises/search";
-import type { RoutineDay } from "@/domain/schemas";
 import { ExerciseImage } from "@/features/exercises/exercise-image";
 import { useCatalogNames, useExercises } from "@/features/exercises/use-exercises";
 import { useExerciseLabels } from "@/features/exercises/use-exercise-labels";
 import { usePrefs } from "@/features/preferences/prefs";
-import { useUserData } from "@/features/user-data/user-data-context";
 import { cn } from "@/lib/utils";
 
 /** Rows rendered at once; typing narrows the list further. */
 const LIMIT = 80;
 
 /**
- * Pick several exercises for a day: instant search (same engine as the library),
- * tap to select (blue check, in the order you tap), then add them all at once.
+ * Pick exercises: instant search (same engine as the library), tap to select (blue check,
+ * in the order you tap), then add them all at once. With `single`, a tap picks and closes.
  */
 export function ExercisePicker({
   open,
   onOpenChange,
-  day,
+  onPick,
+  single = false,
+  title,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  day: RoutineDay | null;
+  onPick: (exerciseIds: string[]) => Promise<void>;
+  single?: boolean;
+  title?: string;
 }) {
   const t = useTranslations("routines.picker");
   const tExercises = useTranslations("exercises");
   const common = useTranslations("common");
-  const { db } = useUserData();
   const { locale } = usePrefs();
   const exercises = useExercises();
   const names = useCatalogNames();
@@ -52,6 +52,10 @@ export function ExercisePicker({
   );
 
   function toggle(id: string) {
+    if (single) {
+      void pick([id]);
+      return;
+    }
     setSelected((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id]));
   }
 
@@ -60,10 +64,10 @@ export function ExercisePicker({
     setSelected([]);
   }
 
-  async function add() {
-    if (!day || selected.length === 0) return;
-    await addExercises(db, day, selected);
-    toast.success(t("added", { count: selected.length }));
+  async function pick(ids: string[]) {
+    if (ids.length === 0) return;
+    await onPick(ids);
+    if (!single) toast.success(t("added", { count: ids.length }));
     onOpenChange(false);
     reset();
   }
@@ -75,13 +79,15 @@ export function ExercisePicker({
         onOpenChange(next);
         if (!next) reset();
       }}
-      title={t("title")}
+      title={title ?? t("title")}
       closeLabel={common("cancel")}
       tall
       footer={
-        <Button size="lg" className="w-full" disabled={selected.length === 0} onClick={() => void add()}>
-          {t("add", { count: selected.length })}
-        </Button>
+        single ? undefined : (
+          <Button size="lg" className="w-full" disabled={selected.length === 0} onClick={() => void pick(selected)}>
+            {t("add", { count: selected.length })}
+          </Button>
+        )
       }
     >
       {/* Pinned search: the list scrolls under it, blurred (material inside the sheet). */}

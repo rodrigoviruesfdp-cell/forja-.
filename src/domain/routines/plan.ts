@@ -36,11 +36,21 @@ function isTrainingWeekday(routine: Routine, weekday: Weekday): boolean {
   return routine.training_weekdays.length === 0 || routine.training_weekdays.includes(weekday);
 }
 
+export interface PlanOptions {
+  /**
+   * Rotation: a gym session was already started or done that day, so the day's gym slot is
+   * used up (`lastGymDayId` is then that session's day) and the next one moves to the
+   * following training day.
+   */
+  gymDoneToday?: boolean;
+}
+
 export function planForDate(
   routine: Routine,
   days: readonly RoutineDay[],
   date: Date,
   lastGymDayId: string | null = null,
+  options: PlanOptions = {},
 ): DayPlan {
   const weekday = weekdayOf(date);
 
@@ -57,7 +67,7 @@ export function planForDate(
   const pinnedSports = (wd: Weekday) =>
     days.filter((day) => day.kind === "sport" && day.weekday === wd).sort(byPosition);
   const next = nextRotationDay(days, lastGymDayId);
-  const gymToday = next !== null && isTrainingWeekday(routine, weekday);
+  const gymToday = next !== null && isTrainingWeekday(routine, weekday) && !options.gymDoneToday;
   const today = [...(gymToday && next ? [next] : []), ...pinnedSports(weekday)];
 
   // After today: the following gym day on the next training weekday, or a pinned sport if sooner.

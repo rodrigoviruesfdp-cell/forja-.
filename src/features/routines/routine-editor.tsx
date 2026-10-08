@@ -14,7 +14,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Spinner } from "@/components/ui/spinner";
 import { Stepper } from "@/components/ui/stepper";
 import { useSticky } from "@/components/ui/use-sticky";
-import { changeScheduleType, setActiveRoutine, updateRoutine } from "@/data/repositories/routines";
+import { addExercises, changeScheduleType, setActiveRoutine, updateRoutine } from "@/data/repositories/routines";
 import { exerciseDisplayName } from "@/domain/exercises/names";
 import {
   LIMITS,
@@ -28,6 +28,7 @@ import {
   weekLayout,
 } from "@/domain/routines/builder";
 import type { Exercise, Profile, RoutineDay } from "@/domain/schemas";
+import { ExercisePicker } from "@/features/exercises/exercise-picker";
 import { useCatalogNames } from "@/features/exercises/use-exercises";
 import { useProfile } from "@/features/profile/use-profile";
 import { PageHeader } from "@/features/shell/page-header";
@@ -36,7 +37,6 @@ import { DayActionsSheet } from "./day-actions-sheet";
 import { DayCard } from "./day-card";
 import { DayOrderList } from "./day-order-list";
 import { DaySheet, type DaySheetMode } from "./day-sheet";
-import { ExercisePicker } from "./exercise-picker";
 import { ExerciseSheet } from "./exercise-sheet";
 import { RoutineActionsSheet } from "./routine-actions-sheet";
 import { useRoutineLabels } from "./use-routine-labels";
@@ -352,7 +352,10 @@ function RoutineEditor({ tree, profile }: { tree: RoutineTree; profile: Profile 
       <ExercisePicker
         open={sheet?.type === "picker"}
         onOpenChange={closeSheet}
-        day={days.find((day) => day.id === pickerDayId) ?? null}
+        onPick={async (ids) => {
+          const day = days.find((d) => d.id === pickerDayId);
+          if (day) await addExercises(db, day, ids);
+        }}
       />
       <DaySheet
         open={sheet?.type === "day"}

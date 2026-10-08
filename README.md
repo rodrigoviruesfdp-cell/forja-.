@@ -6,11 +6,12 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.3.** Ya funcionan:
+> **Estado: entrega 1.4.** Ya funcionan:
 > - el login, el perfil y las preferencias;
 > - la sincronización sin conexión y la app instalable;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
 > - el **constructor de rutinas**: semanal o en rotación A/B/C/D, con deportes, y la pantalla **Hoy** que te dice qué toca;
+> - el **registro del entreno en vivo**: cada serie en uno a tres toques, lo que hiciste la última vez, calentamientos, récords y un resumen al terminar;
 > - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
@@ -178,6 +179,29 @@ A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez d
 
 ## 9. Cómo probar las entregas
 
+### Entrega 1.4: el entreno en vivo
+
+1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
+2. **Empezar:** en **Hoy**, la tarjeta del día tiene **Empezar entreno**. Se abre el entreno con los ejercicios de ese día. La barra de abajo cambia: duración, descanso desde la última serie y **Terminar**.
+3. **Primera serie de un ejercicio:** la primera vez no hay peso que proponer. Toca el círculo de la fila y se abre una hoja:
+   - **Peso** con **− / +** (2,5 kg o 5 lb), o toca el número y escríbelo;
+   - **Repeticiones** con **− / +**;
+   - **Registrar serie**. La fila se pone en verde.
+4. **Las siguientes series ya vienen rellenadas:** si repites, es **un toque** en el círculo. Para cambiar algo, toca la fila, ajusta y **Registrar serie** (tres toques).
+5. **Calentamiento:** en la hoja, activa **Calentamiento**. La serie sale con una **C** y no cuenta para el objetivo, el volumen ni los récords.
+6. **Corregir:** toca una serie hecha para cambiarla o **Borrar serie** (con **Deshacer**).
+7. **Más opciones:**
+   - **+ Serie** añade otra serie al ejercicio.
+   - El menú **⋯** de cada ejercicio tiene notas, quitar una serie pendiente, cambiar por otro ejercicio, subir o bajar, ver la ficha y quitarlo del entreno.
+   - **Añadir ejercicio**, al final, abre el buscador.
+8. **Salir a medio entreno:** vuelve atrás o cambia de pestaña. En **Hoy** verás **En curso · Continuar** y en las demás pestañas una cápsula encima de la barra que te devuelve al entreno.
+9. **Terminar:** **Terminar** enseña el resumen (duración, volumen, series, ejercicios y récords), te avisa si te quedan series sin hacer y te deja marcar el esfuerzo de 1 a 10 y escribir notas. **Guardar entreno** lo cierra.
+10. **Después:** en **Hoy** aparece **Hecho hoy** (tócalo para ver o corregir el entreno) y, en una rotación, lo siguiente pasa al próximo día.
+11. **La última vez y los récords:** la próxima vez que hagas un ejercicio verás **Última vez** con lo que hiciste; **Copiar** rellena las series. Si levantas más peso que nunca o mejoras tu 1RM estimado, aparece **¡Récord!** y la serie lleva **PR**. La primera vez que haces un ejercicio no hay récords: no hay con qué comparar.
+12. **Entrenar otro día:** debajo de la tarjeta de hoy puedes elegir otro día de la rutina o un **entreno libre** (empieza vacío).
+13. **Descartar:** el **⋯** de arriba tiene **Descartar entreno** (te pide confirmación y deja **Deshacer**).
+14. **Sin conexión:** en modo avión todo funciona igual. Al volver la red se sube solo.
+
 ### Entrega 1.3: rutinas y nuevo diseño
 
 1. **Actualizar la app.** Ábrela con conexión. Arriba aparecerá el aviso **"Hay una versión nueva de la app"**: toca **Actualizar**. Si aún tenías la 1.1, se actualiza sola y se recarga una vez.
@@ -291,8 +315,8 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 ```
 src/
   app/            Rutas de Next.js: solo montan pantallas
-  features/       Pantallas y hooks por funcionalidad (auth, profile, routines, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, reglas de rutinas y plan del día… Sin React ni Supabase
+  features/       Pantallas y hooks por funcionalidad (auth, profile, routines, session, shell…)
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)
