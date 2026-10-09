@@ -107,7 +107,7 @@ function Cell({ entry, onOpen }: { entry: AchievementEntry; onOpen: () => void }
       <span className="relative">
         <Badge icon={achievement.icon} tone={entry.tone} secret={hidden} className="size-[88px]" />
         {entry.unseen.length > 0 ? (
-          <span className="absolute -top-1 -right-1 rounded-full bg-pr px-1.5 py-0.5 text-caption-2 font-semibold text-white">
+          <span className="absolute -top-1 -right-1 rounded-full bg-pr px-1.5 py-0.5 text-caption-2 font-semibold text-background">
             {t("new")}
           </span>
         ) : null}

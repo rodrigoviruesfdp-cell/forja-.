@@ -15,7 +15,7 @@ import { localDate } from "@/domain/dates";
 import type { RoutineDay, Session } from "@/domain/schemas";
 import { useCatalogNames } from "@/features/exercises/use-exercises";
 import { useProfile } from "@/features/profile/use-profile";
-import { type RoutineTree, useLastGymDayId, useRoutineTree } from "@/features/routines/use-routines";
+import { type RoutineTree, useActiveRoutine } from "@/features/routines/use-routines";
 import { useWeekdayLabels, WeekStrip } from "@/features/routines/weekdays";
 import { PickDaySheet } from "@/features/session/pick-day-sheet";
 import { SessionRow } from "@/features/session/session-row";
@@ -35,8 +35,9 @@ export function TodayScreen() {
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
   const profile = useProfile();
-  const tree = useRoutineTree(profile?.active_routine_id ?? null);
-  const lastGymDayId = useLastGymDayId(tree?.days);
+  const activeRoutine = useActiveRoutine();
+  const tree = activeRoutine?.tree;
+  const lastGymDayId = activeRoutine?.lastGymDayId;
   const weekdays = useWeekdayLabels();
   const sessionsToday = useSessionsOn(localDate(now));
   const active = useActiveSession();
@@ -62,6 +63,9 @@ export function TodayScreen() {
   const done = today.filter((s) => s.status === "completed");
   const skipped = today.filter((s) => s.status === "skipped");
   const resting = tree && plan && planned.length === 0 && done.length === 0 && skipped.length === 0 && !active;
+  // Nothing to tap until the whole plan is known: a card that shows up and then changes (no
+  // routine, day A instead of B) could start the wrong session.
+  const loading = activeRoutine === undefined || sessionsToday === undefined || active === undefined;
 
   async function skip(day: RoutineDay) {
     const undo = await skipPlannedDay(db, user.id, day, todayIso);
@@ -71,164 +75,166 @@ export function TodayScreen() {
   return (
     <>
       <PageHeader subtitle={date} title={name ? t("greeting", { name }) : t("greetingAnonymous")} />
-      <Stagger className="flex flex-col gap-4 px-4 pb-8">
-        {active ? (
-          <StaggerItem>
-            <ActiveCard session={active} />
-          </StaggerItem>
-        ) : null}
+      {loading ? null : (
+        <Stagger className="flex flex-col gap-4 px-4 pb-8">
+          {active ? (
+            <StaggerItem>
+              <ActiveCard session={active} />
+            </StaggerItem>
+          ) : null}
 
-        {done.map((session) => (
-          <StaggerItem key={session.id}>
-            {session.kind === "gym" ? (
-              <CardLink size="tile" href={`/session?id=${session.id}`} data-nav="forward">
-                <SessionRow session={session} label={t("doneTitle")} trailing={<Chevron />} />
-              </CardLink>
-            ) : (
-              <CardButton size="tile" onClick={() => setSportSheet({ mode: "edit", session })}>
-                <SessionRow session={session} label={t("doneTitle")} trailing={<Chevron />} />
-              </CardButton>
-            )}
-          </StaggerItem>
-        ))}
+          {done.map((session) => (
+            <StaggerItem key={session.id}>
+              {session.kind === "gym" ? (
+                <CardLink size="tile" href={`/session?id=${session.id}`} data-nav="forward">
+                  <SessionRow session={session} label={t("doneTitle")} trailing={<Chevron />} />
+                </CardLink>
+              ) : (
+                <CardButton size="tile" onClick={() => setSportSheet({ mode: "edit", session })}>
+                  <SessionRow session={session} label={t("doneTitle")} trailing={<Chevron />} />
+                </CardButton>
+              )}
+            </StaggerItem>
+          ))}
 
-        {skipped.map((session) => (
-          <StaggerItem key={session.id}>
-            <Card size="tile">
-              <SessionRow
-                session={session}
-                label={t("skippedTitle")}
-                trailing={
-                  <Button variant="ghost" size="sm" className="text-planned" onClick={() => void deleteSession(db, session)}>
-                    {common("undo")}
-                  </Button>
-                }
-              />
-            </Card>
-          </StaggerItem>
-        ))}
-
-        {tree === null ? (
-          <StaggerItem>
-            <Card size="lg" className="flex flex-col items-start gap-4">
-              <span className="flex size-12 items-center justify-center rounded-[14px] bg-primary text-primary-foreground">
-                <Dumbbell className="size-6" strokeWidth={2.1} />
-              </span>
-              <div className="flex flex-col gap-1.5">
-                <h2 className="text-title-2">{t("noRoutineTitle")}</h2>
-                <p className="text-muted-foreground">{t("noRoutineBody")}</p>
-              </div>
-              <div className="flex w-full flex-col gap-3">
-                <ButtonLink href="/routines" size="lg" className="w-full">
-                  {t("createRoutine")}
-                </ButtonLink>
-                {active ? null : (
-                  <Button variant="secondary" className="w-full" onClick={() => void start(null, tSession("freeTitle"))}>
-                    {tSession("startFree")}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </StaggerItem>
-        ) : null}
-
-        {tree
-          ? planned.map((day) => (
-              <StaggerItem key={day.id}>
-                <PlannedDayCard
-                  tree={tree}
-                  day={day}
-                  href={editorHref}
-                  primary={!active}
-                  onStart={() =>
-                    day.kind === "gym" ? void start(day, day.name) : setSportSheet({ mode: "new", date: todayIso, day })
+          {skipped.map((session) => (
+            <StaggerItem key={session.id}>
+              <Card size="tile">
+                <SessionRow
+                  session={session}
+                  label={t("skippedTitle")}
+                  trailing={
+                    <Button variant="ghost" size="sm" className="text-planned" onClick={() => void deleteSession(db, session)}>
+                      {common("undo")}
+                    </Button>
                   }
-                  onSkip={() => void skip(day)}
                 />
-              </StaggerItem>
-            ))
-          : null}
+              </Card>
+            </StaggerItem>
+          ))}
 
-        {resting ? (
-          <StaggerItem>
-            <Card size="lg" className="flex items-center gap-4">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-planned/12 text-planned">
-                <MoonStar className="size-6" strokeWidth={2} />
-              </span>
-              <div>
-                <h2 className="text-title-3">{t("restTitle")}</h2>
-                <p className="text-subhead text-muted-foreground">{t("restBody")}</p>
-              </div>
-            </Card>
-          </StaggerItem>
-        ) : null}
-
-        {active ? null : (
-          <StaggerItem>
-            <div className="-my-1 flex">
-              {tree ? (
-                <Button variant="ghost" className="flex-1 text-planned" onClick={() => setPicking(true)}>
-                  {tSession("otherDay")}
-                </Button>
-              ) : null}
-              <Button
-                variant="ghost"
-                className="flex-1 text-planned"
-                onClick={() => setSportSheet({ mode: "new", date: todayIso })}
-              >
-                {t("logSport")}
-              </Button>
-            </div>
-          </StaggerItem>
-        )}
-
-        {tree && plan?.upcoming ? (
-          <StaggerItem>
-            <CardLink size="tile" href={editorHref} className="flex items-center gap-3">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-concentric bg-surface-2 text-foreground">
-                <CalendarCheck className="size-5" strokeWidth={2.1} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="tracking-caption block text-footnote text-muted-foreground uppercase">
-                  {t("upcoming")} ·{" "}
-                  {t("when", {
-                    days: plan.upcoming.inDays,
-                    weekday: weekdays.long[(weekdayOf(now) + plan.upcoming.inDays) % 7] ?? "",
-                  })}
+          {tree === null ? (
+            <StaggerItem>
+              <Card size="lg" className="flex flex-col items-start gap-4">
+                <span className="flex size-12 items-center justify-center rounded-[14px] bg-primary text-primary-foreground">
+                  <Dumbbell className="size-6" strokeWidth={2.1} />
                 </span>
-                <span className="block truncate text-headline">{plan.upcoming.day.name}</span>
-              </span>
-              <ChevronRight aria-hidden className="size-5 shrink-0 text-tertiary-foreground" />
-            </CardLink>
-          </StaggerItem>
-        ) : null}
+                <div className="flex flex-col gap-1.5">
+                  <h2 className="text-title-2">{t("noRoutineTitle")}</h2>
+                  <p className="text-muted-foreground">{t("noRoutineBody")}</p>
+                </div>
+                <div className="flex w-full flex-col gap-3">
+                  <ButtonLink href="/routines" size="lg" className="w-full">
+                    {t("createRoutine")}
+                  </ButtonLink>
+                  {active ? null : (
+                    <Button variant="secondary" className="w-full" onClick={() => void start(null, tSession("freeTitle"))}>
+                      {tSession("startFree")}
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            </StaggerItem>
+          ) : null}
 
-        {tree ? (
-          <StaggerItem>
-            <Card className="flex flex-col gap-3">
-              <p className="tracking-caption text-footnote text-muted-foreground uppercase">
-                {t("thisWeek")} · {tree.routine.name}
-              </p>
-              <WeekStrip days={weekStrip(tree.routine, tree.days)} labels={weekdays} />
-            </Card>
-          </StaggerItem>
-        ) : null}
+          {tree
+            ? planned.map((day) => (
+                <StaggerItem key={day.id}>
+                  <PlannedDayCard
+                    tree={tree}
+                    day={day}
+                    href={editorHref}
+                    primary={!active}
+                    onStart={() =>
+                      day.kind === "gym" ? void start(day, day.name) : setSportSheet({ mode: "new", date: todayIso, day })
+                    }
+                    onSkip={() => void skip(day)}
+                  />
+                </StaggerItem>
+              ))
+            : null}
 
-        {profileIncomplete ? (
-          <StaggerItem>
-            <CardLink size="tile" href="/profile" className="flex items-center gap-3">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-concentric bg-surface-2">
-                <UserRound className="size-5" strokeWidth={2.1} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-headline">{t("setupProfile")}</span>
-                <span className="block text-subhead text-muted-foreground">{t("setupProfileBody")}</span>
-              </span>
-              <ChevronRight aria-hidden className="size-5 shrink-0 text-tertiary-foreground" />
-            </CardLink>
-          </StaggerItem>
-        ) : null}
-      </Stagger>
+          {resting ? (
+            <StaggerItem>
+              <Card size="lg" className="flex items-center gap-4">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-planned/12 text-planned">
+                  <MoonStar className="size-6" strokeWidth={2} />
+                </span>
+                <div>
+                  <h2 className="text-title-3">{t("restTitle")}</h2>
+                  <p className="text-subhead text-muted-foreground">{t("restBody")}</p>
+                </div>
+              </Card>
+            </StaggerItem>
+          ) : null}
+
+          {active ? null : (
+            <StaggerItem>
+              <div className="-my-1 flex">
+                {tree ? (
+                  <Button variant="ghost" className="flex-1 text-planned" onClick={() => setPicking(true)}>
+                    {tSession("otherDay")}
+                  </Button>
+                ) : null}
+                <Button
+                  variant="ghost"
+                  className="flex-1 text-planned"
+                  onClick={() => setSportSheet({ mode: "new", date: todayIso })}
+                >
+                  {t("logSport")}
+                </Button>
+              </div>
+            </StaggerItem>
+          )}
+
+          {tree && plan?.upcoming ? (
+            <StaggerItem>
+              <CardLink size="tile" href={editorHref} className="flex items-center gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-concentric bg-surface-2 text-foreground">
+                  <CalendarCheck className="size-5" strokeWidth={2.1} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="tracking-caption block text-footnote text-muted-foreground uppercase">
+                    {t("upcoming")} ·{" "}
+                    {t("when", {
+                      days: plan.upcoming.inDays,
+                      weekday: weekdays.long[(weekdayOf(now) + plan.upcoming.inDays) % 7] ?? "",
+                    })}
+                  </span>
+                  <span className="block truncate text-headline">{plan.upcoming.day.name}</span>
+                </span>
+                <ChevronRight aria-hidden className="size-5 shrink-0 text-tertiary-foreground" />
+              </CardLink>
+            </StaggerItem>
+          ) : null}
+
+          {tree ? (
+            <StaggerItem>
+              <Card className="flex flex-col gap-3">
+                <p className="tracking-caption text-footnote text-muted-foreground uppercase">
+                  {t("thisWeek")} · {tree.routine.name}
+                </p>
+                <WeekStrip days={weekStrip(tree.routine, tree.days)} labels={weekdays} />
+              </Card>
+            </StaggerItem>
+          ) : null}
+
+          {profileIncomplete ? (
+            <StaggerItem>
+              <CardLink size="tile" href="/profile" className="flex items-center gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-concentric bg-surface-2">
+                  <UserRound className="size-5" strokeWidth={2.1} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-headline">{t("setupProfile")}</span>
+                  <span className="block text-subhead text-muted-foreground">{t("setupProfileBody")}</span>
+                </span>
+                <ChevronRight aria-hidden className="size-5 shrink-0 text-tertiary-foreground" />
+              </CardLink>
+            </StaggerItem>
+          ) : null}
+        </Stagger>
+      )}
       <PickDaySheet open={picking} onOpenChange={setPicking} tree={tree ?? null} />
       <SportSheet open={sportSheet !== null} onOpenChange={(open) => !open && setSportSheet(null)} target={sportSheet} />
     </>
@@ -250,7 +256,7 @@ function ActiveCard({ session }: { session: Session }) {
           <p className="tracking-caption text-footnote text-muted-foreground uppercase">{t("inProgressTitle")}</p>
           <h2 className="truncate text-title-2">{session.title ?? tSession("title")}</h2>
         </div>
-        <span className="numeric text-title-3 text-done">{clockText(now - Date.parse(session.started_at ?? session.created_at))}</span>
+        <span className="numeric text-title-3">{clockText(now - Date.parse(session.started_at ?? session.created_at))}</span>
       </div>
       <ButtonLink href={`/session?id=${session.id}`} data-nav="forward" size="lg" className="w-full">
         {tSession("continue")}

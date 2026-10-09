@@ -11,7 +11,8 @@ import { clockText, useTicker } from "./use-ticker";
 
 const MotionLink = motion.create(Link);
 
-function useVisibleSession() {
+/** The session in progress, unless you are on its screen (where the pill would be in the way). */
+export function useVisibleSession() {
   const pathname = usePathname();
   const session = useActiveSession();
   return !session || pathname === "/session" || pathname.startsWith("/session/") ? null : session;

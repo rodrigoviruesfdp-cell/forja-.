@@ -19,27 +19,33 @@
   /* Fills (iOS systemFill family): inputs, segmented tracks, tags. Translucent on purpose. */
   --surface-2: rgb(118 118 128 / 0.12);
   --surface-3: rgb(118 118 128 / 0.2);
-  /* #6E6E73 keeps 4.5:1 on white (readable in a bright gym); #86868B for hints and captions. */
-  --muted-foreground: #6e6e73;
-  --tertiary-foreground: #86868b;
+  /*
+    Text colours keep 4.5:1 (WCAG AA) on every surface they sit on, fills included: Apple's
+    "Increase Contrast" greys and tints rather than the default ones, which fall short for
+    small text (#007AFF on white is 4.0:1). Green stays the bright one: it marks things
+    (dots, ticks, switches) and is not used for text.
+  */
+  --muted-foreground: #636366;
+  --tertiary-foreground: #6e6e73;
   --border: rgb(0 0 0 / 0.06);
   --separator: rgb(60 60 67 / 0.14);
   --input: rgb(118 118 128 / 0.12);
   --ring: rgb(0 113 227 / 0.55);
-  --material: rgb(255 255 255 / 0.7);
+  /* Opaque enough for the tab labels to stay readable over whatever scrolls behind. */
+  --material: rgb(255 255 255 / 0.85);
   --material-thick: rgb(255 255 255 / 0.85);
   --segment-thumb: #ffffff;
 
   --primary: #ffcc00;
   --primary-foreground: #1d1d1f;
   --done: #34c759;
-  --pr: #ff3b30;
+  --pr: #c40018;
   --streak: #ff9500;
-  --planned: #007aff;
+  --planned: #005ecb;
   /* Charts (validated for colour blindness, see DECISIONES "Progreso"): 1 = gym, 2 = sports. */
   --chart-1: #2a78d6;
   --chart-2: #eb6834;
-  --destructive: #ff3b30;
+  --destructive: #c40018;
 
   --elevation-card: 0 8px 30px rgb(0 0 0 / 0.06);
   --elevation-float: 0 12px 40px rgb(0 0 0 / 0.12), 0 2px 8px rgb(0 0 0 / 0.04);
@@ -70,25 +76,25 @@
   --surface: #1c1c1e;
   --surface-2: rgb(118 118 128 / 0.24);
   --surface-3: rgb(118 118 128 / 0.32);
-  --muted-foreground: #98989d;
-  --tertiary-foreground: #86868b;
+  --muted-foreground: #a1a1a6;
+  --tertiary-foreground: #8e8e93;
   --border: rgb(255 255 255 / 0.12);
   --separator: rgb(84 84 88 / 0.6);
   --input: rgb(118 118 128 / 0.24);
   --ring: rgb(10 132 255 / 0.6);
-  --material: rgb(0 0 0 / 0.6);
+  --material: rgb(0 0 0 / 0.8);
   --material-thick: rgb(28 28 30 / 0.82);
   --segment-thumb: #636366;
 
   --primary: #ffd60a;
   --primary-foreground: #1d1d1f;
   --done: #30d158;
-  --pr: #ff453a;
+  --pr: #ff6961;
   --streak: #ff9f0a;
-  --planned: #0a84ff;
+  --planned: #409cff;
   --chart-1: #3987e5;
   --chart-2: #d95926;
-  --destructive: #ff453a;
+  --destructive: #ff6961;
 
   --elevation-card: 0 8px 30px rgb(0 0 0 / 0.35);
   --elevation-float: 0 12px 40px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
@@ -245,6 +251,23 @@
 
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
+}
+
+/*
+  A touch area of at least 44×44 pt (HIG) around a control drawn smaller: segments, small
+  chips, the round buttons of sheets and cards. Invisible; the control must be positioned
+  (relative or absolute).
+*/
+@utility touch-target {
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    translate: -50% -50%;
+  }
 }
 
 @utility scrollbar-none {

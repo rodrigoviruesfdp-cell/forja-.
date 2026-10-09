@@ -14,8 +14,7 @@ import { type CalendarCell, type DayMarks, dayMarks, monthGrid, projectPlan } fr
 import { dateOf, localDate } from "@/domain/dates";
 import type { RoutineDay, Session } from "@/domain/schemas";
 import { weeklyStreak, weeklyTarget } from "@/domain/streak";
-import { useProfile } from "@/features/profile/use-profile";
-import { useLastGymDayId, useRoutineTree } from "@/features/routines/use-routines";
+import { useActiveRoutine } from "@/features/routines/use-routines";
 import { useWeekdayLabels } from "@/features/routines/weekdays";
 import { SessionRow } from "@/features/session/session-row";
 import { useSessionDays, useSessionsBetween } from "@/features/session/use-session";
@@ -41,9 +40,9 @@ export function CalendarScreen() {
   const t = useTranslations("calendar");
   const now = useNow({ updateInterval: 60_000 });
   const today = localDate(now);
-  const profile = useProfile();
-  const tree = useRoutineTree(profile?.active_routine_id ?? null);
-  const lastGymDayId = useLastGymDayId(tree?.days);
+  const activeRoutine = useActiveRoutine();
+  const tree = activeRoutine?.tree;
+  const lastGymDayId = activeRoutine?.lastGymDayId;
   const [view, setView] = useState<MonthView>({ year: now.getFullYear(), month: now.getMonth() });
   const [direction, setDirection] = useState(0);
   const [selected, setSelected] = useState(today);
@@ -196,10 +195,10 @@ function MonthCard({
             {t("today")}
           </button>
         ) : null}
-        <IconButton aria-label={t("previous")} onClick={() => onMove(-1)} className="size-10">
+        <IconButton aria-label={t("previous")} onClick={() => onMove(-1)}>
           <ChevronLeft />
         </IconButton>
-        <IconButton aria-label={t("next")} onClick={() => onMove(1)} className="size-10">
+        <IconButton aria-label={t("next")} onClick={() => onMove(1)}>
           <ChevronRight />
         </IconButton>
       </div>
@@ -395,7 +394,7 @@ function DayDetail({
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="h-9 px-3.5"
+                  className="relative touch-target h-9 px-3.5"
                   onClick={() => (day.kind === "gym" ? void start(day, day.name) : onSport({ mode: "new", date, day }))}
                 >
                   {day.kind === "gym" ? t("start") : t("register")}

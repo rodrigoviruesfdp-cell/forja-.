@@ -5,14 +5,20 @@ import { type ReactNode, useEffect } from "react";
 import { AchievementsProvider } from "@/features/achievements/achievements-provider";
 import { useAuth } from "@/features/auth/auth-store";
 import { ProfilePrefsBridge } from "@/features/profile/profile-prefs-bridge";
+import { usePrefs } from "@/features/preferences/prefs";
 import { AppShell } from "@/features/shell/app-shell";
 import { InitialSyncGate } from "@/features/shell/initial-sync-gate";
 import { Splash } from "@/features/shell/splash";
 import { UserDataProvider } from "@/features/user-data/user-data-context";
+import { loadCatalogNames } from "@/i18n/exercise-names";
 
 export default function SignedInLayout({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const router = useRouter();
+  const { locale } = usePrefs();
+
+  // Today's plan shows exercise names: load them while the local database opens, not after.
+  useEffect(() => void loadCatalogNames(locale), [locale]);
 
   useEffect(() => {
     if (auth.status === "signed-out") router.replace("/login");

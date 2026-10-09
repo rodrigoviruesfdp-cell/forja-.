@@ -194,7 +194,7 @@ function RoutineEditor({ tree, profile }: { tree: RoutineTree; profile: Profile 
             <p className="flex items-center gap-2 px-4 text-subhead text-muted-foreground">
               <CircleCheck className="size-4 shrink-0 text-done" strokeWidth={2.4} />
               <span>
-                <span className="font-semibold text-done">{t("active")}</span> · {t("activeHint")}
+                <span className="font-semibold text-foreground">{t("active")}</span> · {t("activeHint")}
               </span>
             </p>
           ) : profile ? (
@@ -238,7 +238,7 @@ function RoutineEditor({ tree, profile }: { tree: RoutineTree; profile: Profile 
                             aria-label={`${t("addTraining")}: ${weekdays.long[weekday]}`}
                             onClick={() => newDay("gym", weekday)}
                             {...PRESS}
-                            className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-surface text-foreground shadow-card"
+                            className="relative touch-target flex size-10 cursor-pointer items-center justify-center rounded-full bg-surface text-foreground shadow-card"
                           >
                             <Plus className="size-5" strokeWidth={2.4} />
                           </motion.button>
@@ -274,7 +274,7 @@ function RoutineEditor({ tree, profile }: { tree: RoutineTree; profile: Profile 
                     <button
                       type="button"
                       onClick={() => setReordering((on) => !on)}
-                      className="cursor-pointer text-subhead font-medium text-planned"
+                      className="relative touch-target cursor-pointer text-subhead font-medium text-planned"
                     >
                       {reordering ? common("done") : t("reorder")}
                     </button>

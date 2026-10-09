@@ -15,7 +15,7 @@ export function Chip({ active = false, className, type = "button", ...props }: C
       type={type}
       data-active={active}
       className={cn(
-        "inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 text-subhead font-semibold whitespace-nowrap",
+        "relative touch-target inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 text-subhead font-semibold whitespace-nowrap",
         active ? "bg-foreground text-background" : "bg-surface-2 text-foreground",
         className,
       )}

@@ -6,21 +6,20 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.9.** Ya funcionan:
-> - el login, el perfil y las preferencias;
-> - la sincronización sin conexión y la app instalable;
+> **Estado: Fase 1 terminada (entrega 1.10).** Todo lo que se planificó para la primera versión funciona:
+> - el login, el perfil y las preferencias; la app instalable y sin conexión;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
-> - el **constructor de rutinas**: semanal o en rotación A/B/C/D, con deportes, y la pantalla **Hoy** que te dice qué toca;
-> - el **registro del entreno en vivo**: cada serie en uno a tres toques, lo que hiciste la última vez, calentamientos, récords y un resumen al terminar;
-> - los **deportes** (también de días pasados) con su spot y lo que cuentan (olas, asaltos, vías…), y el **calendario** con tu racha de semanas;
-> - **compartir en Instagram**: una imagen de tu sesión (con tu foto y los datos encima, o sobre fondo oscuro), una pegatina transparente y la imagen de tu rutina;
-> - los **logros**: medallas con niveles que se consiguen entrenando, una animación al desbloquearlas y una fila de **destacados** bajo tu perfil, como en Instagram;
-> - el **progreso**: tiempo y carga por semana, series por músculo, la evolución de cada ejercicio (1RM estimado, peso, volumen o repeticiones), tus últimos récords y tus deportes;
-> - las **fotos de progreso**: privadas, con tu peso de ese día, un comparador de antes y después y una imagen de tu transformación para compartir;
-> - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
-> - la base de la futura **Comunidad**.
+> - el **constructor de rutinas** (semanal o en rotación A/B/C/D, con deportes) y la pantalla **Hoy**, que te dice qué toca;
+> - el **entreno en vivo**: cada serie en uno a tres toques, lo que hiciste la última vez, calentamientos, récords y un resumen al terminar;
+> - los **deportes** (también de días pasados) con su spot y lo que cuentan, y el **calendario** con tu racha de semanas;
+> - **compartir en Instagram** tus sesiones, rutinas, logros y transformaciones;
+> - los **logros** con niveles y los **destacados** bajo tu perfil;
+> - el **progreso**: gráficas por semana, series por músculo, la evolución de cada ejercicio y tus récords;
+> - las **fotos de progreso**, privadas, con comparador de antes y después;
+> - **datos de ejemplo** para ver la app llena sin tocar los tuyos;
+> - diseño al estilo de iOS, revisado para que se lea bien y se toque fácil (contraste y botones de 44 pt).
 >
-> El plan completo está en [docs/DECISIONES.md](docs/DECISIONES.md) y el de la parte social en [docs/SOCIAL.md](docs/SOCIAL.md) y el de los logros en [docs/LOGROS.md](docs/LOGROS.md).
+> Lo siguiente: la **Fase 2** (coach IA, solo cuando la pidas) y la **Fase 3** (amigos por invitación). El plan y todas las decisiones están en [docs/DECISIONES.md](docs/DECISIONES.md); la parte social en [docs/SOCIAL.md](docs/SOCIAL.md) y los logros en [docs/LOGROS.md](docs/LOGROS.md).
 >
 > **Tu instalación ya está hecha:** proyecto Supabase `forja`, proyecto Vercel `forja` y app en <https://forja-gilt-six.vercel.app>. Los pasos 2 a 7 sirven solo si alguna vez hay que montarlo desde cero.
 
@@ -36,10 +35,12 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 6. [Publicar la app en Vercel](#6-publicar-la-app-en-vercel)
 7. [Decirle a Supabase cuál es tu web](#7-decirle-a-supabase-cuál-es-tu-web)
 8. [Instalar la app en el móvil](#8-instalar-la-app-en-el-móvil)
-9. [Cómo probar las entregas](#9-cómo-probar-las-entregas)
-10. [Actualizar la app más adelante](#10-actualizar-la-app-más-adelante)
-11. [Para desarrolladores](#11-para-desarrolladores)
-12. [Licencias y créditos](#12-licencias-y-créditos)
+9. [Guía de uso](#9-guía-de-uso)
+10. [Entrega 1.10: cómo probarla](#10-entrega-110-cómo-probarla)
+11. [Problemas frecuentes](#11-problemas-frecuentes)
+12. [Actualizar la app más adelante](#12-actualizar-la-app-más-adelante)
+13. [Para desarrolladores](#13-para-desarrolladores)
+14. [Licencias y créditos](#14-licencias-y-créditos)
 
 Tiempo estimado la primera vez: **30–40 minutos**, aunque tu instalación ya está hecha. No necesitas instalar nada en tu ordenador: todo se hace desde el navegador.
 
@@ -186,210 +187,125 @@ Para que el enlace del correo lleve a tu app:
 
 A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez descarga tus datos; después abre al instante, también sin cobertura.
 
-## 9. Cómo probar las entregas
+## 9. Guía de uso
 
-### Entrega 1.9: fotos de progreso
+### Primeros pasos
 
-1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
-2. **Progreso → Fotos de progreso** (la tarjeta de arriba). La primera vez, **Añadir tu primera foto**; después, el **+** de arriba a la derecha.
-3. **Añadir una foto:** el iPhone te deja hacerla en el momento o elegirla del carrete. Luego:
-   - **Fecha** (hoy, o la del día en que la hiciste);
-   - **Postura:** frente, perfil, espalda u otra;
-   - **Peso corporal** de ese día (opcional): sirve para ver cuánto ha cambiado.
+1. **Entra** con tu email: pulsa **Enviar código** y escribe el código del correo, o usa **Entrar con contraseña**.
+2. **Perfil** (tu inicial, arriba a la derecha): idioma, **kg o lb**, tema (oscuro, claro o el del sistema), tu nombre, objetivo y nivel.
+3. **Rutinas:** empieza con una plantilla (**Usar**) o crea la tuya con el **+**.
+4. ¿Quieres ver la app llena antes de tener semanas de entrenos? **Perfil → Datos de ejemplo** (ver más abajo).
 
-   **Guardar**. La foto se guarda en el móvil al momento y se sube a tu cuenta en cuanto hay conexión.
-4. **La galería** va por meses. Toca una foto para verla en grande: pasa a la siguiente deslizando o con las flechas. Desde ahí puedes **Editar** (fecha, postura, peso), **Comparar** o **Eliminar**.
-5. **Comparar** (con dos fotos o más): por defecto, tu última foto con la primera de la misma postura.
-   - **Deslizar:** arrastra la línea blanca para pasar de antes a después.
-   - **Lado a lado:** las dos juntas.
-   - Toca **Antes** o **Después** para elegir otras fotos. Abajo, el tiempo que ha pasado y el cambio de peso (si lo anotaste).
-6. **Compartir transformación:** una imagen de historia con las dos fotos, las fechas y el tiempo. **Mostrar peso** pone o quita el cambio de peso.
-7. **Privacidad:**
-   - las fotos son **solo tuyas**: se guardan en una carpeta privada de tu cuenta, que nadie más puede ver;
-   - antes de subirlas, el móvil las reduce y **les quita la ubicación GPS** y los datos de la cámara;
-   - **Eliminar** las borra del móvil y de tu cuenta (no se puede deshacer);
-   - solo salen de ahí si tú compartes una imagen.
-8. **Otro móvil:** al entrar con tu cuenta, las fotos se descargan cuando las miras y quedan guardadas para verlas sin conexión.
+El punto sobre tu inicial dice cómo va la sincronización: **✓ verde**, todo guardado; **nube tachada**, sin conexión (se sube después).
 
-### Entrega 1.8: progreso
+### Hoy
 
-1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
-2. **Pestaña Progreso** (abajo). Arriba eliges el **periodo**: 4 semanas, 3 meses, 1 año o todo. Todo lo de la pantalla sigue a ese periodo.
-3. **Las cifras:** sesiones, tiempo, volumen (kilos movidos) y récords. Debajo, cuánto cambian respecto al periodo anterior (si en ese periodo ya entrenabas).
-4. **Entrenamiento por semana:** columnas con el gimnasio en azul y el deporte en naranja.
-   - Toca una columna (o desliza el dedo) y arriba ves esa semana: gimnasio, deporte y total. Sin tocar, sale tu media.
-   - **Carga** = minutos × esfuerzo: una hora suave pesa menos que una hora a tope. Las sesiones sin esfuerzo apuntado no cuentan (te dice cuántas).
-   - Con **1 año** o **Todo** (si es largo), las columnas pasan a ser meses.
-   - **Ver datos** enseña los números en una tabla.
-5. **Series por músculo:** cuántas series de trabajo haces a la semana, de media, de cada músculo.
-6. **Ejercicios:** cada ejercicio con su tendencia. Tócalo para ver su gráfica:
-   - **1RM** (lo que podrías levantar una vez, estimado con tu mejor serie de hasta 12 repeticiones), **Peso** máximo o **Volumen**; en ejercicios sin peso, las **repeticiones**;
-   - los puntos rojos son récords; desliza el dedo por la línea para ver cada sesión;
-   - debajo, todas tus sesiones de ese ejercicio con su mejor serie.
-7. **Últimos récords** y **Deportes** (sesiones, tiempo, km, olas…) del periodo.
-8. **Desde la biblioteca:** en un ejercicio que ya hayas hecho, **Ver mi progreso**.
-9. **Sin conexión:** todo funciona igual.
+- Te dice **qué toca hoy** según tu rutina, con sus ejercicios, y lo siguiente ("Después · mañana").
+- **Empezar entreno** abre el entreno del día. **Saltar hoy** lo marca como saltado (en una rotación, ese día pasa al siguiente día de entreno).
+- **Entrenar otro día** elige otro día de la rutina o un entreno libre. **Registrar deporte** apunta un deporte.
+- Lo que ya has hecho hoy aparece como **Hecho hoy**: tócalo para verlo o corregirlo.
 
-### Entrega 1.7: logros y destacados
+### El entreno en vivo
 
-1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
-2. **Lo que ya hiciste cuenta.** Al abrirla (con conexión), la app repasa tus sesiones. Si ya cumples algún logro (por ejemplo **Primera piedra**, tu primera sesión), aparece la animación **¡Logro conseguido!** con la medalla. Toca **Siguiente** para ver el próximo, **Seguir** para cerrar o **Ver** para abrirlo.
-3. **Destacados en tu perfil:** toca tu inicial arriba a la derecha (Perfil). Bajo tu nombre está la fila de círculos:
-   - sin elegir nada, salen tus 5 últimos logros;
-   - un **anillo de color** marca los que aún no has abierto;
-   - el último círculo, **Todos**, abre la lista completa.
-4. **Ver un logro:** toca un círculo. Se abre a pantalla completa, como una historia:
-   - la medalla y su nivel (bronce, plata, oro, platino, diamante);
-   - **cuándo** lo conseguiste y **con qué sesión**;
-   - lo que falta para el siguiente nivel (por ejemplo **10 / 50** sesiones de gimnasio);
-   - toca los lados o desliza para pasar al siguiente; desliza hacia abajo o toca **✕** para cerrar.
-5. **Destacar:** en un logro conseguido, **Destacar**. Desde ese momento tu perfil enseña solo los que destaques (hasta 8), en el orden en que los elegiste. **Destacado** otra vez lo quita.
-6. **Todos los logros:** conseguidos, **en progreso** (con su barra) y **secretos** (salen como "?" hasta que los consigues).
-7. **Al terminar un entreno o guardar un deporte**, si consigues un logro o subes de nivel, la animación sale en ese momento.
-8. **Compartir un logro:** en el logro, **Compartir**. Igual que con las sesiones: con tu foto, sobre fondo oscuro o como pegatina cuadrada.
-9. **Sin conexión:** todo funciona igual; los logros se suben al volver la red y no se duplican aunque uses dos móviles.
+- Cada ejercicio trae sus series. **Un toque** en el círculo registra la serie propuesta; tocando la fila cambias peso y repeticiones (botones **− / +** o escribiendo).
+- **Última vez** enseña lo que hiciste; **Copiar** lo rellena.
+- **Calentamiento:** actívalo en la hoja de la serie. No cuenta para el objetivo, el volumen ni los récords.
+- **Récords (PR):** si levantas más que nunca o mejoras tu 1RM estimado, aparece **¡Récord!**. La primera vez que haces un ejercicio no hay récords: no hay con qué comparar.
+- El **⋯** de cada ejercicio: notas, cambiarlo por otro, moverlo, quitarlo. **Añadir ejercicio** al final.
+- **Terminar** enseña el resumen (duración, volumen, series y récords) y te deja marcar el esfuerzo de 1 a 10. Si sales a medio entreno, una cápsula encima de la barra te devuelve a él.
 
-Los logros son un primer borrador para pulirlos juntos: la lista está en [docs/LOGROS.md](docs/LOGROS.md).
+### Deportes y spots
 
-### Entrega 1.6: compartir en Instagram
+- **Registrar deporte:** el deporte (o uno escrito por ti), la duración, el esfuerzo y, según el deporte, sus datos: **olas** en surf, **asaltos** en boxeo, **vías** en escalada, **distancia** en running, bici, natación…
+- **Spot o lugar:** escríbelo la primera vez; luego aparece en la lista. Con otras mayúsculas o sin tildes no se duplica.
+- Se pueden apuntar **días pasados** (desde el calendario).
 
-1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
-2. **Desde un deporte:** en **Hoy** toca un deporte hecho (por ejemplo, el surf) y, en su hoja, **Compartir**.
-3. **Desde un entreno de gimnasio:** al terminarlo, en el resumen, **Compartir** (o el icono de compartir arriba a la derecha; también desde el calendario, abriendo ese día).
-4. **Elige el estilo** arriba:
-   - **Foto:** elige una foto de tu carrete (o hazla en el momento). Los datos aparecen encima, abajo, como en Strava. **Cambiar foto** para probar otra.
-   - **Fondo:** los datos sobre un fondo oscuro con el amarillo de Forja.
-   - **Pegatina:** solo los datos, con el fondo transparente, para ponerlos encima de una historia que ya tengas.
-   - **Mostrar dónde** quita o pone el spot o lugar.
-5. **Compartir:** se abre el menú del móvil. Elige **Instagram → Historia**. Si Instagram no aparece, toca **Guardar imagen** y elígela desde el carrete al crear la historia.
-6. **Pegatina (experimental):** toca **Copiar pegatina**, abre una historia en Instagram con tu foto y pégala (mantén el dedo en la pantalla → **Pegar**, o el botón de pegatina). Si no se pega, **Guardar imagen** y añádela desde el carrete.
-7. **Tu rutina:** en **Rutinas**, abre una y toca **⋯** (arriba a la derecha) → **Compartir rutina**. La imagen lleva los días (letras A, B, C… o los días de la semana) y sus ejercicios.
-8. **Sin conexión:** todo funciona igual en modo avión. La imagen se hace en tu móvil: **tu foto no se sube a ningún sitio**.
+### Calendario y racha
 
-### Entrega 1.5: deportes, spots y calendario
+- **Racha:** semanas seguidas en las que llegas a tu objetivo de sesiones (gimnasio y deportes juntos). La semana en curso no la rompe.
+- Cada día: **puntos verdes** (hecho), **círculos azules** (lo que planifica tu rutina) o una **raya gris** (saltado). Toca un día para ver lo que hiciste o añadir un deporte.
 
-1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
-2. **Registrar un deporte:** en **Hoy**, **Registrar deporte**.
-   - Elige el deporte (o escribe uno que no esté).
-   - Duración con los atajos (30, 45, 60, 90, 120 min) o escrita.
-   - Según el deporte, aparecen sus datos: **olas** en surf, **asaltos** en boxeo, **vías y bloques** en escalada, **distancia** en running, bici, natación…
-   - **Spot** (o lugar): escribe "Zurriola" la primera vez; las siguientes aparece en la lista para tocarlo. Escribirlo igual con otras mayúsculas o sin tildes no lo duplica.
-   - Esfuerzo de 1 a 10 y notas, opcionales. **Guardar**.
-3. En **Hoy** aparece **Hecho hoy · Surf · 1 h 30 min · 14 olas · Zurriola**. Tócalo para corregirlo o eliminarlo (con **Deshacer**).
-4. **Un deporte de la rutina:** si hoy toca (por ejemplo, fútbol los miércoles), su tarjeta tiene **Registrar fútbol**, que abre la hoja ya rellenada.
-5. **Saltar un día:** en la tarjeta de lo que toca, **Saltar hoy**. Queda como **Saltado hoy** (con **Deshacer**). En una rotación, ese día no se pierde: pasa al siguiente día de entreno.
-6. **Calendario** (pestaña de abajo):
-   - **Racha:** semanas seguidas en las que llegas a tu objetivo de sesiones (gimnasio y deportes juntos). El anillo es la semana actual.
-   - Cada día lleva **puntos verdes** (hecho), **círculos azules** (lo que planifica tu rutina, de hoy en adelante) o una **raya gris** (saltado).
-   - Cambia de mes con las flechas o deslizando. **Hoy** te devuelve al mes actual.
-   - **Toca un día** para ver lo que hiciste: un entreno de gimnasio abre su resumen; un deporte abre su hoja para corregirlo.
-   - En días pasados, **Añadir deporte** apunta algo que hiciste ese día.
-7. **Sin conexión:** todo funciona igual en modo avión; se sube al volver la red.
+### Rutinas
 
-### Entrega 1.4: el entreno en vivo
+- **Semanal** (cada día de la semana tiene lo suyo) o **rotación** (A, B, C, D… uno detrás de otro en tus días de entreno), con deportes fijos en un día.
+- Toca un ejercicio para cambiar series y repeticiones (fijas o en rango). Arrastra el asa ⠿ para reordenar; **Ordenar** cambia el orden de los días.
+- El **⋯** de la rutina: cambiar el nombre, duplicarla, hacerla activa, compartirla o eliminarla.
+
+### Biblioteca de ejercicios
+
+- **Rutinas → Biblioteca de ejercicios:** 876 ejercicios con fotos. El buscador entiende español e inglés, con o sin tildes.
+- Filtros por **músculo** y **material**; **Mis ejercicios** muestra los tuyos (créalos con el **+**).
+- En un ejercicio que ya hayas hecho, **Ver mi progreso**.
+
+### Progreso
+
+- Arriba eliges el **periodo** (4 semanas, 3 meses, 1 año o todo).
+- **Entrenamiento por semana:** gimnasio en azul y deporte en naranja; toca una columna para ver esa semana. **Carga** = minutos × esfuerzo.
+- **Series por músculo**, **Ejercicios** (cada uno con su gráfica de 1RM estimado, peso, volumen o repeticiones), **Últimos récords** y **Deportes**.
+- **Ver datos** enseña cualquier gráfica como tabla.
+
+### Fotos de progreso
+
+- **Progreso → Fotos de progreso → +**: haz la foto o elígela del carrete, con fecha, postura y peso corporal (opcional).
+- **Comparar:** deslizando una línea entre antes y después, o lado a lado; abajo, el tiempo que ha pasado y el cambio de peso.
+- **Privadas:** se guardan en una carpeta de tu cuenta que nadie más puede ver; el móvil las reduce y les quita la ubicación GPS antes de subirlas. **Eliminar** las borra del móvil y de tu cuenta.
+
+### Logros y destacados
+
+- Medallas con niveles (bronce, plata, oro, platino, diamante) que se consiguen entrenando. Al conseguir una sale la animación **¡Logro conseguido!**
+- Bajo tu nombre, en **Perfil**, la fila de **destacados**: tus últimos logros o los que elijas con **Destacar** (hasta 8). **Todos** abre la lista completa, con lo que falta para cada nivel.
+
+### Compartir en Instagram
+
+- Desde un entreno terminado, un deporte, una rutina, un logro o una comparación de fotos: **Compartir**.
+- Estilos: **Foto** (tu foto con los datos encima), **Fondo** (oscuro) o **Pegatina** (fondo transparente). Luego **Instagram → Historia**, o **Guardar imagen** y elegirla desde el carrete.
+- La imagen se hace en tu móvil: tus fotos no se suben a ningún sitio.
+
+### Datos de ejemplo
+
+- **Perfil → Datos de ejemplo → Probar con datos de ejemplo:** la app se llena con 12 semanas de entrenos inventados (una rutina A/B/C/D con fútbol, surf en dos spots, carreras y tu peso bajando), con sus récords, logros, racha y gráficas.
+- **Tus datos no se tocan y no se sube nada:** es una copia aparte que solo vive en ese móvil. Mientras estás en ella, una cápsula **Datos de ejemplo · Salir** lo recuerda encima de la barra.
+- **Salir** te devuelve a tus datos y borra el ejemplo (también lo que hayas hecho dentro).
+
+### Sin conexión y varios móviles
+
+- Todo funciona en **modo avión**: se guarda en el móvil y se sube al volver la red. Las fotos y las imágenes del catálogo que ya has visto también se ven sin red.
+- Si entras con tu cuenta en otro móvil o en el ordenador, todo aparece allí. Si cambias lo mismo en dos sitios a la vez, gana el último cambio.
+
+## 10. Entrega 1.10: cómo probarla
 
 1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
-2. **Empezar:** en **Hoy**, la tarjeta del día tiene **Empezar entreno**. Se abre el entreno con los ejercicios de ese día. La barra de abajo cambia: duración, descanso desde la última serie y **Terminar**.
-3. **Primera serie de un ejercicio:** la primera vez no hay peso que proponer. Toca el círculo de la fila y se abre una hoja:
-   - **Peso** con **− / +** (2,5 kg o 5 lb), o toca el número y escríbelo;
-   - **Repeticiones** con **− / +**;
-   - **Registrar serie**. La fila se pone en verde.
-4. **Las siguientes series ya vienen rellenadas:** si repites, es **un toque** en el círculo. Para cambiar algo, toca la fila, ajusta y **Registrar serie** (tres toques).
-5. **Calentamiento:** en la hoja, activa **Calentamiento**. La serie sale con una **C** y no cuenta para el objetivo, el volumen ni los récords.
-6. **Corregir:** toca una serie hecha para cambiarla o **Borrar serie** (con **Deshacer**).
-7. **Más opciones:**
-   - **+ Serie** añade otra serie al ejercicio.
-   - El menú **⋯** de cada ejercicio tiene notas, quitar una serie pendiente, cambiar por otro ejercicio, subir o bajar, ver la ficha y quitarlo del entreno.
-   - **Añadir ejercicio**, al final, abre el buscador.
-8. **Salir a medio entreno:** vuelve atrás o cambia de pestaña. En **Hoy** verás **En curso · Continuar** y en las demás pestañas una cápsula encima de la barra que te devuelve al entreno.
-9. **Terminar:** **Terminar** enseña el resumen (duración, volumen, series, ejercicios y récords), te avisa si te quedan series sin hacer y te deja marcar el esfuerzo de 1 a 10 y escribir notas. **Guardar entreno** lo cierra.
-10. **Después:** en **Hoy** aparece **Hecho hoy** (tócalo para ver o corregir el entreno) y, en una rotación, lo siguiente pasa al próximo día.
-11. **La última vez y los récords:** la próxima vez que hagas un ejercicio verás **Última vez** con lo que hiciste; **Copiar** rellena las series. Si levantas más peso que nunca o mejoras tu 1RM estimado, aparece **¡Récord!** y la serie lleva **PR**. La primera vez que haces un ejercicio no hay récords: no hay con qué comparar.
-12. **Entrenar otro día:** debajo de la tarjeta de hoy puedes elegir otro día de la rutina o un **entreno libre** (empieza vacío).
-13. **Descartar:** el **⋯** de arriba tiene **Descartar entreno** (te pide confirmación y deja **Deshacer**).
-14. **Sin conexión:** en modo avión todo funciona igual. Al volver la red se sube solo.
+2. **Datos de ejemplo:**
+   - **Perfil → Datos de ejemplo → Probar con datos de ejemplo** y confirma.
+   - En unos segundos estás en **Hoy** con la rutina de ejemplo; abajo, la cápsula **Datos de ejemplo · Salir**.
+   - Recorre **Progreso** (gráficas de 12 semanas, récords), **Calendario** (racha), un ejercicio (por ejemplo *Press de banca*) y tu **Perfil** (destacados).
+   - Puedes empezar un entreno: no se guarda en tu cuenta.
+   - Toca la cápsula → **Salir**: vuelves a tus datos, tal como estaban.
+3. **Rapidez:** cierra la app del todo y ábrela: **Hoy** tiene que salir al momento, ya con lo que toca. Los datos de otros móviles llegan un segundo después (la app enseña primero lo que tiene y luego sincroniza).
+4. **Más fácil de leer y de tocar:**
+   - En **tema claro**, el azul de los botones de texto es un poco más oscuro y los grises algo más marcados (siguen el modo "Aumentar contraste" de Apple).
+   - Los botones pequeños (el periodo de Progreso, los deportes y duraciones al registrar un deporte, la **✕** de las hojas, los días L M X…) responden en un área de al menos 44 pt aunque se dibujen más pequeños.
+   - La barra de abajo es algo menos transparente, para que se lea encima de cualquier cosa.
 
-### Entrega 1.3: rutinas y nuevo diseño
+## 11. Problemas frecuentes
 
-1. **Actualizar la app.** Ábrela con conexión. Arriba aparecerá el aviso **"Hay una versión nueva de la app"**: toca **Actualizar**. Si aún tenías la 1.1, se actualiza sola y se recarga una vez.
-2. **Nuevo diseño:**
-   - La barra de abajo flota y es translúcida. La pestaña elegida tiene una "lente" que se desliza al cambiar.
-   - Los títulos grandes se encogen en la barra de arriba al hacer scroll.
-   - Al entrar en una pantalla, la nueva llega desde la derecha; al volver, se va hacia la derecha.
-   - Botones y tarjetas se "hunden" un poco al tocarlos.
-   - Tu inicial, arriba a la derecha, lleva un punto con el estado de la sincronización (✓ verde = todo guardado).
-3. **Hoy:** sin rutina, te propone crear una.
-4. **Rutinas → plantilla "A/B/C/D + deporte" → Usar:**
-   - se crea la rutina y se abre el editor;
-   - es tu rutina activa (lo pone en verde arriba);
-   - hay 4 días A, B, C, D con ejercicios y fútbol los miércoles.
-5. **Editar un ejercicio:** toca uno.
-   - Se abre una hoja desde abajo y la pantalla de detrás se hace pequeña, como en el iPhone. Se cierra arrastrándola hacia abajo.
-   - Cambia las series con **− / +**.
-   - Activa o quita el **rango** de repeticiones (8–12) o déjalas fijas.
-   - Prueba **Subir**, **Bajar** y **Mover a otro día**.
-6. **Reordenar:** mantén pulsado el asa ⠿ de un ejercicio y arrástralo; los demás se apartan. Para cambiar el orden A/B/C/D, toca **Ordenar**.
-7. **Añadir ejercicios:** **Añadir ejercicio** abre un buscador. Marca varios y pulsa **Añadir N ejercicios**.
-8. **Días:**
-   - **Añadir día** crea el siguiente de la rotación (E…).
-   - **Añadir deporte** permite elegir uno (pádel, running…) y fijarlo a un día o dejarlo sin día.
-   - Con el menú **⋯** de un día puedes editarlo, duplicarlo o eliminarlo. Al eliminar aparece **Deshacer**.
-9. **Semanal o rotación:** cambia **Organización** a *Semanal*.
-   - Ves la semana de lunes a domingo, con los días repartidos en los días que sueles entrenar.
-   - Los días sin entreno muestran **Descanso** y un **+**.
-   - Vuelve a *Rotación* cuando quieras.
-10. **Ajustes de la rutina:** **Días que sueles entrenar** (círculos L M X J V S D) y **Objetivo semanal**.
-11. **Hoy:** muestra lo que toca hoy con sus ejercicios, lo siguiente ("Después · mañana") y tu semana.
-12. **Varias rutinas:** crea otra con el **+** de Rutinas. Con el menú **⋯** puedes cambiarle el nombre, duplicarla, hacerla activa o eliminarla (te pide confirmación).
-13. **Sin conexión:** en modo avión, abre la rutina y cambia algo. Al volver la red se sube sola.
+| Qué pasa | Qué hacer |
+|---|---|
+| La app dice **"Falta conectar Supabase"** | Las variables de Vercel no están bien puestas: revisa el paso 6 y vuelve a desplegar. |
+| **No llega el correo** con el código | Mira en spam. Sin servidor de correo propio (paso 5), Supabase solo envía 2 correos por hora. Mientras tanto, **Entrar con contraseña**. |
+| La **nube tachada** no se va aunque tengas conexión | Supabase pausa los proyectos gratuitos tras 7 días sin uso: entra en su panel y pulsa **Restore**. No se pierde nada; al volver, se sube solo. |
+| **Perfil** muestra **"Cambios que el servidor no aceptó"** | El servidor rechazó ese dato (por ejemplo, un nombre de usuario ya cogido). **Descartar** recupera lo que hay en el servidor. |
+| No aparece el aviso de **versión nueva** | Cierra la app del todo (en iPhone, desliza hacia arriba desde el multitarea) y ábrela con conexión. |
+| Te has quedado en los **datos de ejemplo** | Toca la cápsula **Datos de ejemplo · Salir** o ve a **Perfil → Salir de los datos de ejemplo**. |
+| En iPhone, el enlace del correo **abre Safari y no la app** | Es una limitación de las apps web en iPhone: usa el **código de 6 dígitos** (paso 5) o la contraseña. |
 
-### Entrega 1.2: biblioteca de ejercicios y base de la Comunidad
-
-1. **Actualizar la app.** (Con la 1.3 ya no hace falta: se actualiza con el aviso.)
-2. **Navegación:** abajo verás **Hoy, Calendario, Rutinas, Progreso y Comunidad**. **Perfil** se abre desde el círculo con tu inicial, arriba a la derecha.
-3. **Rutinas → Biblioteca de ejercicios:** tiene que poner 876 ejercicios. La primera vez que se abre tras actualizar, el móvil descarga el catálogo (unos segundos).
-4. **Buscador:** prueba `sentadilla`, `press banca`, `squat` (en inglés también vale), `gluteos` (sin tilde) o `curl mancuernas`. Los resultados aparecen al escribir.
-5. **Filtros:** toca **Músculo** y elige *Bíceps*; luego **Material** y elige *Mancuernas*. Entra en un ejercicio y vuelve: el filtro sigue puesto.
-6. **Ficha de un ejercicio:**
-   - las dos fotos se alternan y muestran el movimiento;
-   - se ven el músculo principal, los secundarios, el material y los pasos;
-   - las instrucciones del catálogo aún están en inglés.
-7. **Ejercicio propio:**
-   1. Pulsa el botón **+** de arriba a la derecha.
-   2. Si guardas sin rellenar, te avisa de lo que falta.
-   3. Crea por ejemplo "Hip thrust en máquina" con músculo principal *Glúteos*.
-   4. Después, edítalo (lápiz de arriba) y elimínalo (aparece **Deshacer** por si te equivocas).
-   5. El filtro **Mis ejercicios** muestra solo los tuyos.
-8. **Comunidad:**
-   1. Mira la pantalla de "Próximamente".
-   2. Ve a tu perfil y reserva tu **nombre de usuario**: escribe `@tunombre` y pulsa Intro.
-   3. Vuelve a Comunidad: verás "Tu nombre público será @tunombre".
-9. **Sin conexión:** en modo avión, abre la biblioteca y busca. Funciona igual. Las fotos que ya hayas visto también se ven sin red.
-
-### Entrega 1.1: login, perfil y modo sin conexión
-
-1. **Entrar:** abre la app instalada, escribe tu email y pulsa **Enviar código**. Escribe el código del correo, o usa **Entrar con contraseña**.
-   - Si pruebas con un email que no es el tuyo, tiene que decirte que esa cuenta no existe.
-2. **Pantalla Hoy:** te saluda con tu nombre y la fecha. El ✓ verde sobre tu inicial, arriba a la derecha, significa "todo guardado en el servidor".
-3. **Perfil:**
-   - Cambia el **idioma** a English: toda la app cambia al momento.
-   - Cambia **kg / lb**. De momento solo se guarda; se notará cuando registres pesos (entrega 1.4).
-   - Prueba los temas **Oscuro, Claro y Sistema**.
-   - Rellena nombre, objetivo, nivel y lesiones.
-4. **Sin conexión:**
-   - Activa el **modo avión**, cambia el nivel y **cierra y vuelve a abrir la app**. Tiene que abrir igual, con el cambio hecho, y el punto de tu inicial tiene que mostrar una nube tachada.
-   - Quita el modo avión. En unos segundos vuelve el ✓ verde.
-   - En Supabase, **Table Editor → profiles**, verás el cambio guardado.
-5. **Otro dispositivo:** entra desde el ordenador y cambia el idioma. Al abrir la app en el móvil, también cambia.
-6. **Cerrar sesión:** en **Perfil**. Te lo confirma con una hoja desde abajo y, si hubiera cambios sin subir, te avisa.
-
-## 10. Actualizar la app más adelante
+## 12. Actualizar la app más adelante
 
 Cada vez que suba una entrega nueva a GitHub, **Vercel la publica sola** en 1–2 minutos. La próxima vez que abras la app con conexión verás arriba **"Hay una versión nueva de la app · Actualizar"**. Nunca se recarga sola en mitad de un entreno.
 
 Si una entrega trae una migración nueva (un archivo nuevo en `supabase/migrations`), te lo diré y tendrás que pegarla en el SQL Editor como en el paso 3.
 
-## 11. Para desarrolladores
+## 13. Para desarrolladores
 
 Requisitos: Node 20.9+ (probado con 22) y Docker (solo para el Supabase local).
 
@@ -423,11 +339,12 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 src/
   app/            Rutas de Next.js: solo montan pantallas
   features/       Pantallas y hooks por funcionalidad (achievements, auth, calendar, photos, profile, progress, routines, session, share, sports, shell…)
-  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir, el motor de logros, las cifras de progreso… Sin React ni Supabase
+  domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir, el motor de logros, las cifras de progreso, el generador de datos de ejemplo… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)
     media/        Fotos: prepararlas en el móvil y subirlas, bajarlas y borrarlas de Storage
+    demo/         Datos de ejemplo: una base de datos aparte que nunca se sincroniza
     repositories/ Única forma de escribir datos desde la UI
     supabase/     Cliente de Supabase
   i18n/           Textos en español e inglés, y nombres traducidos del catálogo (exercise-names/)
@@ -444,7 +361,7 @@ docs/SOCIAL.md      Diseño de la futura Comunidad
 docs/LOGROS.md      Diseño de los logros y destacados
 ```
 
-## 12. Licencias y créditos
+## 14. Licencias y créditos
 
 - Tipografía del sistema: **SF Pro** en iPhone, iPad y Mac; Roboto o Segoe UI en el resto. No se descarga ninguna fuente.
 - **Motion** (animaciones), **vaul** (hojas inferiores) y **sonner** (avisos), licencia MIT.

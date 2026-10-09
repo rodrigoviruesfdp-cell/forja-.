@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { DemoPill, DemoSpacer } from "@/features/demo/demo-pill";
 import { ActiveSessionPill, ActiveSessionSpacer } from "@/features/session/active-session-pill";
 import { BottomNav } from "./bottom-nav";
 import { NavDirectionTracker } from "./nav-direction";
@@ -16,10 +17,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="pb-[var(--tabbar-space)]">
           {children}
           <ActiveSessionSpacer />
+          <DemoSpacer />
         </main>
       </div>
       <UpdateNotifier />
       <ActiveSessionPill />
+      <DemoPill />
       <BottomNav />
     </>
   );

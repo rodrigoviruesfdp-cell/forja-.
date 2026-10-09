@@ -644,6 +644,26 @@ const es = {
       e1rmHint: "1RM estimado: lo que podrías levantar una vez, calculado con tu mejor serie de hasta 12 repeticiones.",
     },
   },
+  demo: {
+    section: "Datos de ejemplo",
+    enter: "Probar con datos de ejemplo",
+    footerOff:
+      "Ves Forja con 12 semanas de entrenos inventados: gráficas, récords, logros y calendario llenos. Tus datos no se tocan y no se sube nada.",
+    footerOn: "Estás viendo datos inventados. Lo que hagas aquí no se guarda en tu cuenta y se borra al salir.",
+    enterTitle: "¿Probar con datos de ejemplo?",
+    enterMessage:
+      "Verás 12 semanas de entrenos inventados para ver cómo queda todo. Tus datos se quedan como están y vuelves a ellos al salir.",
+    preparing: "Preparando los datos de ejemplo…",
+    entered: "Datos de ejemplo listos",
+    error: "No se pudieron preparar los datos de ejemplo",
+    leave: "Salir",
+    leaveSection: "Salir de los datos de ejemplo",
+    leaveTitle: "¿Salir de los datos de ejemplo?",
+    leaveMessage: "Vuelves a tus datos. Lo que hayas hecho en el ejemplo se borra.",
+    left: "Has vuelto a tus datos",
+    pill: "Datos de ejemplo",
+    pillLabel: "Datos de ejemplo: salir y volver a tus datos",
+  },
   photos: {
     title: "Fotos de progreso",
     add: "Añadir foto",

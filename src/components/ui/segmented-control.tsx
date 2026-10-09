@@ -48,7 +48,7 @@ export function SegmentedControl<T extends string>({
             key={option.value}
             value={option.value}
             className={cn(
-              "relative flex-1 cursor-pointer rounded-[10px] px-2 text-subhead",
+              "relative touch-target flex-1 cursor-pointer rounded-[10px] px-2 text-subhead",
               selected ? "font-semibold text-foreground" : "font-medium text-foreground/80",
             )}
           >

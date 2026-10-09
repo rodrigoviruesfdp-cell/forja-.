@@ -16,7 +16,7 @@ const LOCAL_WRITE_DEBOUNCE_MS = 1500;
 const PERIODIC_MS = 60_000;
 
 /**
- * Decides when to sync: on start, after local writes (debounced), when the
+ * Decides when to sync: shortly after start, after local writes (debounced), when the
  * connection comes back, when the app returns to the foreground and every
  * minute while visible. Exposes a status the UI can subscribe to.
  */
@@ -56,7 +56,10 @@ export class SyncRunner {
       () => clearInterval(interval),
       offWrite,
     );
-    void this.syncNow();
+    // On launch the screen reads the local data first: syncing at once competes with it (each
+    // write it makes restarts the screen's queries). Only the very first download cannot wait.
+    if (this.status.initialSyncDone) this.scheduleSync();
+    else void this.syncNow();
   }
 
   stop(): void {

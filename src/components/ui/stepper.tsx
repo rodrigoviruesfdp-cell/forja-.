@@ -31,7 +31,7 @@ export function Stepper({ value, min, max, onChange, decreaseLabel, increaseLabe
           </motion.span>
         </AnimatePresence>
       </span>
-      <div className="flex h-9 overflow-hidden rounded-[10px] bg-surface-2">
+      <div className="flex h-11 overflow-hidden rounded-[12px] bg-surface-2">
         <motion.button
           type="button"
           aria-label={decreaseLabel}

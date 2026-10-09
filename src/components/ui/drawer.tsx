@@ -80,7 +80,7 @@ export function Drawer({
             {closeLabel ? (
               <Vaul.Close
                 aria-label={closeLabel}
-                className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-2 text-muted-foreground"
+                className="relative touch-target flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-2 text-muted-foreground"
               >
                 <X className="size-4" strokeWidth={2.6} />
               </Vaul.Close>

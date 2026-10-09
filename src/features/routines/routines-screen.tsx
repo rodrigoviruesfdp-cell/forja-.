@@ -72,8 +72,8 @@ export function RoutinesScreen() {
               <CardLink size="lg" href={editorHref(active.routine.id)} className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-done/14 px-2.5 py-0.5 text-caption font-semibold text-done">
-                      <Check className="size-3.5" strokeWidth={3} />
+                    <span className="inline-flex items-center gap-1 rounded-full bg-done/14 px-2.5 py-0.5 text-caption font-semibold">
+                      <Check className="size-3.5 text-done" strokeWidth={3} />
                       {t("active")}
                     </span>
                     <p className="mt-2 text-title-2 text-balance">{active.routine.name}</p>

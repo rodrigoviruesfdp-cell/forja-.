@@ -104,7 +104,7 @@ export function ExerciseLibrary() {
                 type="button"
                 aria-label={t("clearSearch")}
                 onClick={() => update({ query: "" })}
-                className="absolute top-1/2 right-1 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center"
+                className="absolute touch-target top-1/2 right-1 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center"
               >
                 <span className="flex size-[18px] items-center justify-center rounded-full bg-tertiary-foreground text-surface">
                   <X className="size-3" strokeWidth={3.2} />

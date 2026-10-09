@@ -82,7 +82,7 @@ export function DayCard({
           aria-label={`${common("more")}: ${title}`}
           onClick={onActions}
           {...PRESS}
-          className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-2 text-foreground"
+          className="relative touch-target flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-2 text-foreground"
         >
           <Ellipsis className="size-5" strokeWidth={2.4} />
         </motion.button>

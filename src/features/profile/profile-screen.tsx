@@ -4,6 +4,7 @@ import { useTranslations } from "use-intl";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Spinner } from "@/components/ui/spinner";
 import { HighlightsRow } from "@/features/achievements/highlights-row";
+import { DemoSection } from "@/features/demo/demo-section";
 import { PageHeader } from "@/features/shell/page-header";
 import { useUserData } from "@/features/user-data/user-data-context";
 import { AccountSection } from "./sections/account-section";
@@ -17,7 +18,7 @@ import { useProfile } from "./use-profile";
 export function ProfileScreen() {
   const t = useTranslations("profile");
   const profile = useProfile();
-  const { user } = useUserData();
+  const { user, demo } = useUserData();
   const name = profile?.display_name || profile?.username || user.email || "?";
 
   return (
@@ -53,12 +54,20 @@ export function ProfileScreen() {
         ) : (
           <Spinner className="mx-auto" />
         )}
-        <StaggerItem className="flex flex-col gap-7">
-          <SyncSection />
-        </StaggerItem>
         <StaggerItem>
-          <AccountSection />
+          <DemoSection />
         </StaggerItem>
+        {/* The sample neither syncs nor belongs to the account: leave it first to sign out. */}
+        {demo ? null : (
+          <>
+            <StaggerItem className="flex flex-col gap-7">
+              <SyncSection />
+            </StaggerItem>
+            <StaggerItem>
+              <AccountSection />
+            </StaggerItem>
+          </>
+        )}
         <p className="text-center text-caption text-tertiary-foreground">
           {t("version", { version: process.env.NEXT_PUBLIC_APP_VERSION ?? "dev" })}
         </p>

@@ -19,5 +19,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Business logic lives in `src/domain` (pure TS, Vitest tests next to it). Row shapes in `src/domain/schemas.ts` must mirror `supabase/migrations`.
 - Schema changes: new file in `supabase/migrations`, update `schemas.ts` + `src/data/sync/tables.ts` + Dexie version in `src/data/local/db.ts`, add pgTAP checks in `supabase/tests`.
 - Every user-facing string goes in `src/i18n/messages/es.ts` and `en.ts` (same keys; a test enforces it). Weights are stored in kg.
+- Sample data ("Probar con datos de ejemplo") is a separate local database (`src/data/demo`, generator in `src/domain/sample`) whose sync goes nowhere; never write sample rows into the user's own database. Screens read `useUserData().demo` when they must behave differently.
+- Accessibility: text keeps 4.5:1 on every surface it sits on (the theme tokens in `globals.css` are Apple's "Increase Contrast" tones; green is for marks, not text). Controls drawn smaller than 44 pt get the `touch-target` utility (on a positioned element).
 - UI follows Apple's HIG (see "Diseño visual" in DECISIONES): build screens from `src/components/ui` (Card, Group rows, Drawer/vaul, ConfirmProvider, sonner toasts) and `src/components/motion` (springs come from `MotionConfig`; no CSS transform transitions). New theme scales (text sizes, shadows) must also be added to `cn`'s tailwind-merge config in `src/lib/utils.ts`.
 - Checks: `npm run check` (lint, types, unit tests); `npm run test:db` with `npx supabase start` running.

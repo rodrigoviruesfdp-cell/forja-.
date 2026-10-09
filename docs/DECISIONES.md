@@ -15,7 +15,9 @@ Documento vivo: se actualiza en cada entrega.
 | 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | ✅ Hecha |
 | 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | ✅ Hecha |
 | 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | ✅ Hecha |
-| 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | Siguiente |
+| 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | ✅ Hecha |
+
+**La Fase 1 está terminada.**
 
 Las gráficas pasan de la 1.6 a la 1.8: la 1.4 ya enseña "la última vez" y los récords en el gimnasio, las gráficas necesitan semanas de datos, y compartir y los logros aprovechan lo registrado desde el primer día (los logros también se calculan hacia atrás).
 
@@ -336,6 +338,41 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
 - **Imagen de transformación:** las dos fotos a toda altura, una al lado de la otra, con "Antes / Después", las fechas, el tiempo que ha pasado y (si quieres) el cambio de peso. Se dibuja en el móvil con el generador de la 1.6.
 - Las fotos de progreso pueden considerarse **datos de salud**: por eso son privadas sin excepción y no hay nada que las publique dentro de la app (eso llegará, con consentimiento explícito, en la Fase 3).
 
+### Pulido (1.10)
+
+**Datos de ejemplo.** El plan decía "un botón para cargarlas y otro para borrarlas"; se ha hecho como un **modo aparte**, que hace lo mismo sin sus problemas:
+
+- Mezclar sesiones inventadas con las tuyas en tu cuenta tenía tres pegas: los récords de tus series se calcularían contra pesos inventados; los logros conseguidos no se borran nunca, así que los del ejemplo se quedarían; y se subiría todo a Supabase.
+- **Cómo es:** una **segunda base de datos local** (`forja-<id>-demo`) con una copia de tu catálogo y tu perfil y 12 semanas inventadas. Mientras estás en ella, la app la usa en lugar de la tuya y **su sincronización no va a ningún sitio** (ni filas ni fotos). Al salir se borra entera.
+- **Las 12 semanas** salen de un generador puro y con semilla (`src/domain/sample`): la plantilla A/B/C/D + fútbol, con doble progresión (más repeticiones hasta el tope del rango y luego más peso), algún día saltado o perdido, surf en dos spots, carreras cada dos domingos y el peso corporal bajando. Los pesos son números redondos en tu unidad (kg o lb). Los récords se calculan con la misma lógica de siempre; los logros también, y se marcan como vistos para que no salga una ronda de celebraciones.
+- **Cómo se nota:** se entra desde **Perfil → Datos de ejemplo**, con confirmación. Mientras dura, una cápsula **Datos de ejemplo · Salir** encima de la barra; en Perfil no aparecen **Sincronización** ni **Cerrar sesión** (para cerrar sesión, primero se sale del ejemplo).
+
+**Rendimiento.** El requisito era abrir la sesión del día en menos de 2 s con conexión media. Medido con Chromium en un móvil simulado con el procesador **4 veces más lento** (un Android de gama media; un iPhone actual va bastante más rápido):
+
+| Caso | Tiempo |
+|---|---|
+| App instalada (lo normal): abrir y ver lo que toca hoy | ≈ 1,2 s |
+| Primera vez, sin nada en caché, 4G (9 Mbit/s) | ≈ 2,4 s (≈ 540 KB) |
+| Primera vez, sin nada en caché, 4G lento (1,6 Mbit/s) | ≈ 4,3 s |
+| Empezar el entreno desde Hoy | ≈ 0,6 s |
+| Registrar una serie | ≈ 0,3 s |
+
+- **Conclusión:** con la app instalada se cumple de sobra. La primera vez, sin nada guardado y con un móvil lento, pasa de 2 s; solo ocurre al instalarla.
+- **Arreglado:**
+  - al abrir, durante unos milisegundos **Hoy** creía que no había rutina y enseñaba **Empezar entreno libre**: un toque rápido empezaba un entreno vacío. Ahora no enseña botones hasta conocer el plan entero;
+  - el plan se leía en tres consultas seguidas (perfil, rutina, último día hecho); ahora es una;
+  - los nombres de los ejercicios en español se empiezan a cargar al abrir la app, no cuando aparece la tarjeta;
+  - la sincronización espera 1,5 s tras abrir: primero se enseña lo que hay en el móvil, luego se actualiza. Sus escrituras obligaban a repetir las consultas de la pantalla. La primera descarga de un móvil nuevo no espera.
+- **No se ha hecho** (poco beneficio para el riesgo ahora): cambiar Zod por `zod/mini` (≈ 25 KB menos), un cliente de Supabase sin la parte de tiempo real que no usamos, y cargar Motion por partes.
+
+**Accesibilidad.** Revisión automática con **axe** (WCAG 2.1/2.2 AA y buenas prácticas) en las 22 pantallas y hojas principales, en tema claro y oscuro, más una comprobación de tamaños táctiles y de que nada se salga de lado en una pantalla de 320 px:
+
+- antes: fallos de **contraste** en casi todas las pantallas (sobre todo en tema claro) y **66 controles por debajo de 44 pt**;
+- después: **0 fallos**, salvo la barra de abajo atenuada mientras hay una hoja abierta. WCAG lo permite porque está inactiva, y los lectores de pantalla no llegan a ella;
+- ya estaba bien: idioma de la página según tu idioma, zoom permitido, "Reducir movimiento", etiquetas en los botones de icono, gráficas con descripción y tabla.
+
+**README final:** la guía de instalación se mantiene; las instrucciones de cada entrega pasan a ser una **guía de uso** por pantallas, con una sección de **problemas frecuentes**.
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
@@ -346,17 +383,17 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
 
 - **Fondos neutros:** `#F5F5F7` / negro, con tarjetas blancas / `#1C1C1E`.
 - **Materiales translúcidos** (desenfoque + saturación) en barras, menús, hojas y avisos:
-  - claro: blanco al 70 %;
-  - oscuro: negro al 60 %.
+  - claro: blanco al 85 %;
+  - oscuro: negro al 80 % (desde la 1.10: con menos opacidad, las etiquetas de la barra no se leían encima de un botón amarillo o de una foto).
 - **Bordes finos** (negro al 6 % / blanco al 12 %) y **sombras amplias y suaves** (`0 8px 30px` al 6 %).
 - **Esquinas concéntricas:** radio interior = radio exterior − margen. Las tarjetas fijan ambos valores (`<Card size>`) y lo de dentro usa `rounded-concentric`. Las cápsulas (barra inferior, botones) lo cumplen por construcción.
 - **Tipografía del sistema:** SF Pro en Apple, con el espaciado de letras de iOS (solo en Apple); Roboto o Segoe en el resto. Escala de iOS: título grande 34, cuerpo 17, nota 13. Números en **SF Pro Rounded**, tabulares, como en la app Fitness.
-- **Textos secundarios:**
-  - `#6E6E73` en claro, porque `#86868B` no llega a 4,5:1 sobre blanco y en un gimnasio con mucha luz se lee mal;
-  - `#86868B` para pistas y textos de ayuda.
+- **Contraste (desde la 1.10):** todo texto llega a **4,5:1** (WCAG AA) sobre cualquier superficie en la que aparezca, rellenos grises incluidos. Para eso se usan los tonos del modo **"Aumentar contraste" de Apple** en lugar de los normales, que no llegan con texto pequeño (`#007AFF` sobre blanco: 4,0:1):
+  - textos secundarios `#636366` / `#A1A1A6`; terciarios `#6E6E73` / `#8E8E93` (claro / oscuro);
+  - azul `#005ECB` / `#409CFF`; rojo `#C40018` / `#FF6961`.
 - **Color:**
   - el **amarillo** se usa solo en la acción principal de cada pantalla;
-  - **verde** = hecho / activo;
+  - **verde** = hecho / activo, solo en puntos, iconos e interruptores: como texto no llega al contraste, así que "Activa" o el reloj del entreno van en el color del texto con un icono verde al lado;
   - **rojo** = récord o destructivo;
   - **azul** = planificado y acciones en texto (como el tinte de iOS).
   - Lo seleccionado (filtros, días) va en el color del texto, no en amarillo.
@@ -371,13 +408,12 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
   - **hojas** con vaul: se arrastran y la pantalla de detrás se encoge;
   - hojas de acción en lugar de `confirm()` y avisos con **Deshacer** en lugar de preguntar antes de borrar.
 - **Ajuste de vaul:** escala la página desde el principio del documento, y en una lista larga desplazaba lo que estás viendo. Se corrige con `transform-origin` en la parte visible y recortando esa zona con esquinas redondeadas.
-- Objetivos táctiles de 44 px como mínimo y navegación al alcance del pulgar.
+- **Objetivos táctiles de 44 pt como mínimo** y navegación al alcance del pulgar. Los controles que se dibujan más pequeños, como en iOS (segmentos, chips, la ✕ de las hojas, los días L M X…), llevan una zona táctil invisible de 44 × 44 (utilidad `touch-target`).
 
 ## Pendiente / a vigilar
 
 - **Instrucciones de los ejercicios en español:** pendiente (876 textos). Los nombres ya están traducidos y se pueden revisar en `src/i18n/exercise-names/es.json`.
 - **Imágenes del catálogo en nuestro propio almacenamiento** (Supabase Storage) si jsDelivr da problemas.
-- **Datos de ejemplo:** las plantillas de rutina cubren la 1.3. Las sesiones de ejemplo (para ver gráficas) llegarán con la 1.10, con un botón para cargarlas y otro para borrarlas.
 - **Nombre de una rutina de plantilla:** se guarda en el idioma en el que se creó. Cambiar de idioma no la renombra.
 - **Transiciones entre pantallas:** el gesto "atrás" de Android y el botón Volver hacen la animación de volver. En iPhone, la app instalada no tiene gesto de deslizar para volver (limitación de las PWA en iOS).
 - **`body_metrics` y `goals`:** las tablas existen, pero no tienen pantallas en la Fase 1.
@@ -389,7 +425,6 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
   - más adelante: guías de encuadre para repetir la misma postura, recortar o girar a mano, y una gráfica del peso corporal (los datos ya se guardan);
   - si algún día se borra la cuenta, borrar también su carpeta de Storage (llega con "borrar mi cuenta", Fase 3).
 - **Progreso (1.8):**
-  - las sesiones de ejemplo para estrenar las gráficas llegan con la 1.10;
   - más adelante: elegir qué ejercicios seguir de cerca, objetivos (la tabla `goals` ya existe) y la carga semanal comparada con la media de las 4 semanas anteriores.
 - **Logros (1.7):**
   - pulir el catálogo juntos: qué logros de surf y boxeo motivan de verdad, nombres y niveles;
@@ -407,4 +442,8 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
   - el RPE por serie existe en la base de datos, pero no tiene pantalla: no compensa el toque extra;
   - si una máquina va de 1 en 1 kg, el peso se escribe (el paso de los botones podría ser configurable más adelante);
   - el mismo entreno abierto en dos móviles a la vez: gana el último cambio de cada serie.
+- **Pulido (1.10):**
+  - probar los datos de ejemplo y la rapidez en un iPhone de verdad;
+  - probar la app con **VoiceOver**; la revisión automática no lo sustituye;
+  - si algún día la primera carga importa más (abrir al público): `zod/mini`, cliente de Supabase sin tiempo real y Motion por partes.
 - **Passkeys (Face ID / huella):** Supabase empieza a soportarlas. Serían el login ideal para la app instalada; revisar cuando estén disponibles en el plan gratuito.

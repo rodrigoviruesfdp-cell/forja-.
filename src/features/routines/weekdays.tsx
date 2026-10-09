@@ -55,7 +55,7 @@ export function WeekdayPicker({
             onClick={() => onToggle(weekday)}
             {...PRESS}
             className={cn(
-              "flex size-10 cursor-pointer items-center justify-center rounded-full text-subhead font-semibold",
+              "relative touch-target flex size-10 cursor-pointer items-center justify-center rounded-full text-subhead font-semibold",
               on ? "bg-foreground text-background" : "bg-surface-2 text-foreground",
             )}
           >
