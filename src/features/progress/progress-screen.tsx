@@ -31,6 +31,7 @@ import {
 import { METRIC_KEYS } from "@/domain/sports";
 import { useExerciseLabels } from "@/features/exercises/use-exercise-labels";
 import { useCatalogNames, useExercises } from "@/features/exercises/use-exercises";
+import { PhotosCard } from "@/features/photos/photos-card";
 import { PageHeader } from "@/features/shell/page-header";
 import { SportIcon } from "@/features/sports/sport-icon";
 import { useSportName } from "@/features/sports/use-sport-name";
@@ -74,6 +75,9 @@ export function ProgressScreen() {
             </span>
             <p className="text-callout text-muted-foreground">{t("empty")}</p>
           </Card>
+          <div className="pt-4">
+            <PhotosCard />
+          </div>
         </div>
       </>
     );
@@ -89,6 +93,9 @@ export function ProgressScreen() {
         </StaggerItem>
         <StaggerItem>
           <Kpis sessions={data.sessions} sets={data.sets} period={period} compare={range !== "all"} />
+        </StaggerItem>
+        <StaggerItem>
+          <PhotosCard />
         </StaggerItem>
         <StaggerItem>
           <TrainingCard sessions={data.sessions} period={period} />

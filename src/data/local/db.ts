@@ -3,6 +3,7 @@ import type {
   BodyMetric,
   Exercise,
   Goal,
+  Media,
   Place,
   Profile,
   Routine,
@@ -24,6 +25,25 @@ export interface OutboxEntry {
   queued_at: string;
   /** Set when the server rejected the row (validation, permissions). Not retried until edited again. */
   error?: string;
+}
+
+/**
+ * The image files of a photo on this phone (the `media` row says what it is). Not synced as a
+ * row: `MediaSync` uploads them to Storage and downloads them when another phone needs them.
+ */
+export interface MediaFile {
+  /** The media id. */
+  id: string;
+  full?: Blob;
+  thumb?: Blob;
+  /** 1 once both files are in Storage (a number, so Dexie can index it). */
+  uploaded: 0 | 1;
+}
+
+/** Files to delete from Storage (a photo deleted on this phone), retried until done. */
+export interface MediaRemoval {
+  path: string;
+  queued_at: string;
 }
 
 export interface MetaEntry {
@@ -49,6 +69,9 @@ export class LocalDb extends Dexie {
   user_achievements!: EntityTable<UserAchievement, "id">;
   body_metrics!: EntityTable<BodyMetric, "id">;
   goals!: EntityTable<Goal, "id">;
+  media!: EntityTable<Media, "id">;
+  media_files!: EntityTable<MediaFile, "id">;
+  media_removals!: EntityTable<MediaRemoval, "path">;
   outbox!: EntityTable<OutboxEntry, "seq">;
   meta!: EntityTable<MetaEntry, "key">;
 
@@ -86,6 +109,12 @@ export class LocalDb extends Dexie {
     // 1.7: unlocked achievements.
     this.version(3).stores({
       user_achievements: "id, achievement_key, updated_at",
+    });
+    // 1.9: progress photos (rows synced; files kept apart and uploaded by MediaSync).
+    this.version(4).stores({
+      media: "id, kind, taken_at, updated_at",
+      media_files: "id, uploaded",
+      media_removals: "path",
     });
   }
 }

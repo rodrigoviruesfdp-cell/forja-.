@@ -3,6 +3,7 @@ import {
   bodyMetricSchema,
   exerciseSchema,
   goalSchema,
+  mediaSchema,
   placeSchema,
   profileSchema,
   routineDaySchema,
@@ -32,6 +33,7 @@ export const SYNC_TABLES = [
   "user_achievements",
   "body_metrics",
   "goals",
+  "media",
 ] as const;
 
 export type SyncTable = (typeof SYNC_TABLES)[number];
@@ -49,6 +51,7 @@ export const TABLE_SCHEMAS = {
   user_achievements: userAchievementSchema,
   body_metrics: bodyMetricSchema,
   goals: goalSchema,
+  media: mediaSchema,
 } satisfies Record<SyncTable, z.ZodType>;
 
 export type RowOf<T extends SyncTable> = z.infer<(typeof TABLE_SCHEMAS)[T]>;

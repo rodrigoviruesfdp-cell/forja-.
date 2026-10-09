@@ -6,7 +6,7 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 - Español e inglés, kg y lb, tema oscuro por defecto.
 - De momento es **para un solo usuario**: el registro público está desactivado.
 
-> **Estado: entrega 1.8.** Ya funcionan:
+> **Estado: entrega 1.9.** Ya funcionan:
 > - el login, el perfil y las preferencias;
 > - la sincronización sin conexión y la app instalable;
 > - la **biblioteca de 876 ejercicios**, con buscador, filtros y ejercicios propios;
@@ -16,6 +16,7 @@ App web instalable (PWA) para registrar entrenamientos de gimnasio y deportes, v
 > - **compartir en Instagram**: una imagen de tu sesión (con tu foto y los datos encima, o sobre fondo oscuro), una pegatina transparente y la imagen de tu rutina;
 > - los **logros**: medallas con niveles que se consiguen entrenando, una animación al desbloquearlas y una fila de **destacados** bajo tu perfil, como en Instagram;
 > - el **progreso**: tiempo y carga por semana, series por músculo, la evolución de cada ejercicio (1RM estimado, peso, volumen o repeticiones), tus últimos récords y tus deportes;
+> - las **fotos de progreso**: privadas, con tu peso de ese día, un comparador de antes y después y una imagen de tu transformación para compartir;
 > - el **nuevo diseño** al estilo de iOS (materiales translúcidos, animaciones con muelle, hojas que se arrastran);
 > - la base de la futura **Comunidad**.
 >
@@ -81,6 +82,7 @@ Las tablas y sus reglas de seguridad están en la carpeta [`supabase/migrations`
 | 6 | `20261008000300_sport_keys.sql` | Guarda los deportes como códigos (1.4) |
 | 7 | `20261009000100_places_and_sport_metrics.sql` | Spots y datos de cada deporte (1.5) |
 | 8 | `20261010000100_user_achievements.sql` | Logros conseguidos (1.7) |
+| 9 | `20261011000100_media.sql` | Fotos de progreso y su carpeta privada (1.9) |
 
 Para cada archivo:
 
@@ -185,6 +187,29 @@ Para que el enlace del correo lleve a tu app:
 A partir de ahí, abre siempre la app desde el icono **Forja**. La primera vez descarga tus datos; después abre al instante, también sin cobertura.
 
 ## 9. Cómo probar las entregas
+
+### Entrega 1.9: fotos de progreso
+
+1. **Actualizar la app.** Ábrela con conexión y toca **Actualizar** en el aviso de arriba.
+2. **Progreso → Fotos de progreso** (la tarjeta de arriba). La primera vez, **Añadir tu primera foto**; después, el **+** de arriba a la derecha.
+3. **Añadir una foto:** el iPhone te deja hacerla en el momento o elegirla del carrete. Luego:
+   - **Fecha** (hoy, o la del día en que la hiciste);
+   - **Postura:** frente, perfil, espalda u otra;
+   - **Peso corporal** de ese día (opcional): sirve para ver cuánto ha cambiado.
+
+   **Guardar**. La foto se guarda en el móvil al momento y se sube a tu cuenta en cuanto hay conexión.
+4. **La galería** va por meses. Toca una foto para verla en grande: pasa a la siguiente deslizando o con las flechas. Desde ahí puedes **Editar** (fecha, postura, peso), **Comparar** o **Eliminar**.
+5. **Comparar** (con dos fotos o más): por defecto, tu última foto con la primera de la misma postura.
+   - **Deslizar:** arrastra la línea blanca para pasar de antes a después.
+   - **Lado a lado:** las dos juntas.
+   - Toca **Antes** o **Después** para elegir otras fotos. Abajo, el tiempo que ha pasado y el cambio de peso (si lo anotaste).
+6. **Compartir transformación:** una imagen de historia con las dos fotos, las fechas y el tiempo. **Mostrar peso** pone o quita el cambio de peso.
+7. **Privacidad:**
+   - las fotos son **solo tuyas**: se guardan en una carpeta privada de tu cuenta, que nadie más puede ver;
+   - antes de subirlas, el móvil las reduce y **les quita la ubicación GPS** y los datos de la cámara;
+   - **Eliminar** las borra del móvil y de tu cuenta (no se puede deshacer);
+   - solo salen de ahí si tú compartes una imagen.
+8. **Otro móvil:** al entrar con tu cuenta, las fotos se descargan cuando las miras y quedan guardadas para verlas sin conexión.
 
 ### Entrega 1.8: progreso
 
@@ -397,11 +422,12 @@ SUPABASE_TEST_URL=http://127.0.0.1:54321 SUPABASE_TEST_KEY=<publishable> SUPABAS
 ```
 src/
   app/            Rutas de Next.js: solo montan pantallas
-  features/       Pantallas y hooks por funcionalidad (achievements, auth, calendar, profile, progress, routines, session, share, sports, shell…)
+  features/       Pantallas y hooks por funcionalidad (achievements, auth, calendar, photos, profile, progress, routines, session, share, sports, shell…)
   domain/         Lógica pura con tests: unidades, esquemas (Zod), búsqueda, rutinas y plan del día, sesiones, 1RM y récords, deportes, spots, calendario y racha, qué datos lleva cada imagen para compartir, el motor de logros, las cifras de progreso… Sin React ni Supabase
   data/
     local/        Base de datos del móvil (IndexedDB con Dexie)
     sync/         Motor de sincronización (cola de cambios + descarga incremental)
+    media/        Fotos: prepararlas en el móvil y subirlas, bajarlas y borrarlas de Storage
     repositories/ Única forma de escribir datos desde la UI
     supabase/     Cliente de Supabase
   i18n/           Textos en español e inglés, y nombres traducidos del catálogo (exercise-names/)

@@ -469,6 +469,63 @@ export async function svgToImage(svg: SVGSVGElement, size: number): Promise<HTML
   }
 }
 
+export interface TransformationCard {
+  before: { label: string; date: string };
+  after: { label: string; date: string };
+  /** "8 meses después" */
+  headline: string;
+  /** "−4,2 kg de peso corporal", or nothing. */
+  detail: string | null;
+}
+
+/**
+ * A transformation: the two photos side by side, full height, with "Before / After" and their
+ * dates, how long passed and (if you want) the weight change, over a dark fade at the bottom.
+ */
+export function renderTransformation(card: TransformationCard, before: Photo, after: Photo): HTMLCanvasElement {
+  const { width, height } = STORY;
+  const [element, ctx] = canvas(width, height);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, width, height);
+  const half = (width - 4) / 2;
+  [before, after].forEach((photo, i) => {
+    const crop = coverCrop(photo.width, photo.height, half, height);
+    ctx.drawImage(photo, crop.sx, crop.sy, crop.sw, crop.sh, i * (half + 4), 0, half, height);
+  });
+
+  const scrim = ctx.createLinearGradient(0, height * 0.5, 0, height);
+  scrim.addColorStop(0, "rgba(0, 0, 0, 0)");
+  scrim.addColorStop(1, "rgba(0, 0, 0, 0.85)");
+  ctx.fillStyle = scrim;
+  ctx.fillRect(0, 0, width, height);
+  const top = ctx.createLinearGradient(0, 0, 0, SAFE_TOP + 120);
+  top.addColorStop(0, "rgba(0, 0, 0, 0.4)");
+  top.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = top;
+  ctx.fillRect(0, 0, width, SAFE_TOP + 120);
+
+  photoTextShadow(ctx);
+  ctx.textAlign = "center";
+  [card.before, card.after].forEach((side, i) => {
+    const x = i * (half + 4) + half / 2;
+    ctx.fillStyle = YELLOW;
+    font(ctx, 36, 700);
+    ctx.fillText(side.label.toUpperCase(), x, height - SAFE_BOTTOM - 250);
+    ctx.fillStyle = "#fff";
+    drawFitted(ctx, side.date, x, height - SAFE_BOTTOM - 200, half - 40, 40, 28, 600);
+  });
+  ctx.fillStyle = "#fff";
+  drawFitted(ctx, card.headline, width / 2, height - SAFE_BOTTOM - (card.detail ? 70 : 10), width - PAD * 2, 92, 52, 800);
+  if (card.detail) {
+    ctx.globalAlpha = 0.9;
+    drawFitted(ctx, card.detail, width / 2, height - SAFE_BOTTOM - 4, width - PAD * 2, 44, 28, 600);
+    ctx.globalAlpha = 1;
+  }
+  ctx.textAlign = "left";
+  drawBrand(ctx, PAD, SAFE_TOP + 40, 52, "#fff");
+  return element;
+}
+
 export function canvasBlob(element: HTMLCanvasElement, type: "image/jpeg" | "image/png"): Promise<Blob> {
   return new Promise((resolve, reject) => {
     element.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not create the image"))), type, 0.92);
@@ -479,7 +536,7 @@ export function canvasBlob(element: HTMLCanvasElement, type: "image/jpeg" | "ima
  * Loads a photo picked by the user (the browser applies its EXIF rotation). Call `release`
  * when it is no longer shown.
  */
-export async function loadPhoto(file: File): Promise<{ photo: Photo; release: () => void }> {
+export async function loadPhoto(file: Blob): Promise<{ photo: Photo; release: () => void }> {
   const url = URL.createObjectURL(file);
   const image = new Image();
   image.decoding = "async";

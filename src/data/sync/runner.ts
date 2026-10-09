@@ -1,4 +1,5 @@
 import { onLocalWrite } from "@/data/local/mutations";
+import type { MediaSync } from "@/data/media/media-sync";
 import type { SyncEngine } from "./engine";
 import { RemoteError } from "./remote";
 
@@ -31,6 +32,8 @@ export class SyncRunner {
     private readonly engine: SyncEngine,
     private readonly lockName: string,
     initial: Pick<SyncStatus, "lastSyncedAt" | "initialSyncDone">,
+    /** Photo files, synced around the rows (optional: tests run without it). */
+    private readonly media?: Pick<MediaSync, "beforeSync" | "afterSync">,
   ) {
     this.status = { phase: "idle", error: null, ...initial };
   }
@@ -73,7 +76,12 @@ export class SyncRunner {
     }
     this.set({ phase: "syncing", error: null });
     try {
-      await this.withLock(() => this.engine.sync());
+      await this.withLock(async () => {
+        // Photo files go up before their rows, and local copies of deleted photos go after.
+        await this.media?.beforeSync();
+        await this.engine.sync();
+        await this.media?.afterSync();
+      });
       this.set({ phase: "idle", error: null, lastSyncedAt: new Date().toISOString(), initialSyncDone: true });
     } catch (error) {
       if (error instanceof RemoteError && error.kind === "network") {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLiveQuery } from "dexie-react-hooks";
 import { Copy, Download, ImagePlus, Share } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { type ReactNode, useEffect, useEffectEvent, useRef, useState } from "react";
@@ -10,9 +11,12 @@ import { Group, GroupRow } from "@/components/ui/group";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import type { Media } from "@/domain/schemas";
 import { Badge } from "@/features/achievements/badge";
+import { usePhotoFormat, useWeightsOn } from "@/features/photos/use-photos";
 import { useRoutineTree } from "@/features/routines/use-routines";
 import { PageHeader } from "@/features/shell/page-header";
+import { useUserData } from "@/features/user-data/user-data-context";
 import {
   canvasBlob,
   loadPhoto,
@@ -20,18 +24,22 @@ import {
   renderAchievement,
   renderRoutine,
   renderSession,
+  renderTransformation,
   svgToImage,
   type Template,
+  type TransformationCard,
 } from "./render";
 import { useAchievementCard, useRoutineCard, useSessionShare } from "./use-share-content";
 
-/** /share?session=…, /share?routine=… or /share?achievement=… */
+/** /share?session=…, ?routine=…, ?achievement=… or ?transformation=<before>,<after> */
 export function ShareScreen() {
   const params = useSearchParams();
   const sessionId = params.get("session");
   const routineId = params.get("routine");
   const achievementKey = params.get("achievement");
+  const transformation = params.get("transformation");
   if (sessionId) return <SessionShareScreen sessionId={sessionId} />;
+  if (transformation) return <TransformationShareScreen ids={transformation.split(",")} />;
   if (achievementKey) return <AchievementShareScreen achievementKey={achievementKey} />;
   return <RoutineShareScreen routineId={routineId} />;
 }
@@ -142,7 +150,9 @@ function useTemplatePicker() {
       ref={input}
       type="file"
       accept="image/*"
-      aria-label={t("choosePhoto")}
+      // Opened by the Photo segment and the "Choose a photo" row; hidden from screen readers.
+      aria-hidden
+      tabIndex={-1}
       className="sr-only"
       onChange={(e) => {
         void pickPhoto(e.target.files?.[0]);
@@ -245,6 +255,85 @@ function AchievementShareScreen({ achievementKey }: { achievementKey: string }) 
         </>
       }
       hint={template === "sticker" ? t("hintSticker") : t("hintStory")}
+    />
+  );
+}
+
+function TransformationShareScreen({ ids }: { ids: string[] }) {
+  const t = useTranslations("share");
+  const tPhotos = useTranslations("photos");
+  const fmt = usePhotoFormat();
+  const { db, media } = useUserData();
+  const [showWeight, setShowWeight] = useState(true);
+  const [images, setImages] = useState<{ key: string; photos: Photo[] } | null | undefined>(undefined);
+  const rows = useLiveQuery(async () => {
+    const found = await db.media.bulkGet(ids);
+    return found.every((row) => row && !row.deleted_at) && found.length === 2 ? (found as Media[]) : null;
+  }, [db, ids.join(",")]);
+  const weights = useWeightsOn(rows ? rows.map((row) => row.taken_at) : []);
+  const key = rows ? rows.map((row) => row.id).join(",") : "";
+
+  useEffect(() => {
+    if (!rows) return;
+    let cancelled = false;
+    const releases: (() => void)[] = [];
+    void (async () => {
+      const blobs = await Promise.all(rows.map((row) => media.blob(row, "full")));
+      if (blobs.some((blob) => !blob)) {
+        if (!cancelled) setImages(null);
+        return;
+      }
+      const loaded = await Promise.all(blobs.map((blob) => loadPhoto(blob as Blob)));
+      releases.push(...loaded.map((item) => item.release));
+      if (!cancelled) setImages({ key, photos: loaded.map((item) => item.photo) });
+    })();
+    return () => {
+      cancelled = true;
+      for (const release of releases) release();
+    };
+  }, [rows, media, key]);
+
+  const [before, after] = rows ?? [];
+  const change = before && after && weights.get(before.taken_at) && weights.get(after.taken_at)
+    ? (weights.get(after.taken_at) as number) - (weights.get(before.taken_at) as number)
+    : null;
+  const card: TransformationCard | null =
+    before && after
+      ? {
+          before: { label: tPhotos("before"), date: fmt.date(before.taken_at) },
+          after: { label: tPhotos("after"), date: fmt.date(after.taken_at) },
+          headline: fmt.between(before.taken_at, after.taken_at),
+          detail: showWeight && change !== null ? tPhotos("weightChange", { value: fmt.weightDelta(change) }) : null,
+        }
+      : null;
+  const ready = images && images.key === key ? images.photos : null;
+  const rendered = useRendered(
+    card && ready ? () => renderTransformation(card, ready[0] as Photo, ready[1] as Photo) : null,
+    "image/jpeg",
+    `${JSON.stringify(card)}|${ready ? key : ""}`,
+  );
+
+  if (rows === undefined) return <Loading />;
+  if (rows === null || images === null) return <NotFound />;
+
+  return (
+    <ShareLayout
+      preview={rendered}
+      sticker={false}
+      fileName="forja-transformacion.jpg"
+      hint={t("hintTransformation")}
+      controls={
+        change !== null ? (
+          <Group>
+            <GroupRow>
+              <label htmlFor="share-weight" className="flex-1">
+                {t("showWeight")}
+              </label>
+              <Switch id="share-weight" checked={showWeight} onCheckedChange={setShowWeight} />
+            </GroupRow>
+          </Group>
+        ) : null
+      }
     />
   );
 }

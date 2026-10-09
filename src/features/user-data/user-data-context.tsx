@@ -3,6 +3,8 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { createContext, type ReactNode, useContext, useEffect, useState, useSyncExternalStore } from "react";
 import { LocalDb, localDbName } from "@/data/local/db";
+import { MediaSync } from "@/data/media/media-sync";
+import { SupabaseMediaRemote } from "@/data/media/remote";
 import { getMeta, META_KEYS } from "@/data/local/meta";
 import { SyncEngine } from "@/data/sync/engine";
 import { SyncRunner, type SyncStatus } from "@/data/sync/runner";
@@ -15,6 +17,8 @@ interface UserData {
   db: LocalDb;
   engine: SyncEngine;
   runner: SyncRunner;
+  /** Photo files (upload, download, delete). */
+  media: MediaSync;
 }
 
 const UserDataContext = createContext<UserData | null>(null);
@@ -27,6 +31,7 @@ export function UserDataProvider({ user, children }: { user: AuthUser; children:
     let cancelled = false;
     const db = new LocalDb(localDbName(user.id));
     const engine = new SyncEngine(db, new SupabaseRemote(getSupabase()));
+    const media = new MediaSync(db, new SupabaseMediaRemote(getSupabase()));
     let runner: SyncRunner | null = null;
 
     void (async () => {
@@ -35,12 +40,14 @@ export function UserDataProvider({ user, children }: { user: AuthUser; children:
         getMeta<boolean>(db, META_KEYS.initialSyncDone),
       ]);
       if (cancelled) return;
-      runner = new SyncRunner(engine, `forja-sync-${user.id}`, {
-        lastSyncedAt: lastSyncedAt ?? null,
-        initialSyncDone: initialSyncDone ?? false,
-      });
+      runner = new SyncRunner(
+        engine,
+        `forja-sync-${user.id}`,
+        { lastSyncedAt: lastSyncedAt ?? null, initialSyncDone: initialSyncDone ?? false },
+        media,
+      );
       runner.start();
-      setValue({ user, db, engine, runner });
+      setValue({ user, db, engine, runner, media });
     })();
 
     return () => {

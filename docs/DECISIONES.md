@@ -14,8 +14,8 @@ Documento vivo: se actualiza en cada entrega.
 | 1.6 | **Compartir en Instagram:** imagen de la sesión con tu foto y los datos encima, imagen de la rutina, pegatina experimental | ✅ Hecha |
 | 1.7 | **Logros y destacados** en el perfil (ver [`LOGROS.md`](LOGROS.md)) | ✅ Hecha |
 | 1.8 | Progresión: gráficas, PR, volumen por músculo, carga semanal | ✅ Hecha |
-| 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | Siguiente |
-| 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | |
+| 1.9 | **Fotos de progreso** privadas, comparador e imagen de transformación | ✅ Hecha |
+| 1.10 | Pulido: rendimiento, accesibilidad, datos de ejemplo, README final | Siguiente |
 
 Las gráficas pasan de la 1.6 a la 1.8: la 1.4 ya enseña "la última vez" y los récords en el gimnasio, las gráficas necesitan semanas de datos, y compartir y los logros aprovechan lo registrado desde el primer día (los logros también se calculan hacia atrás).
 
@@ -319,6 +319,23 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
   - al tocar, los datos salen **en una línea fija encima de la gráfica** (como la app Salud), no en una etiqueta flotante que tape los botones; también con las flechas del teclado;
   - cada gráfica de columnas tiene **Ver datos** (una tabla), para que ningún dato dependa de tocar.
 
+### Fotos de progreso (1.9)
+
+- **Esquema** (migración `20261011000100_media.sql`):
+  - tabla **`media`**, la "una sola tabla para todas las fotos" decidida antes: `kind` (`progress` ahora; `avatar` y `post` en la Fase 3), `storage_path` y `thumb_path`, `taken_at` (el día), `pose` (frente, perfil, espalda o ninguna), `width`, `height`. RLS como el resto;
+  - la ruta del archivo **siempre empieza por el id del dueño** (lo comprueba la base de datos);
+  - **Storage:** cubo `media` **privado**, como mucho 10 MB por archivo y solo imágenes. Cada usuario solo puede leer, subir, sustituir y borrar dentro de su carpeta. No hay enlaces públicos.
+- **En el móvil, antes de subir:** la foto se pone derecha, se reduce a 1600 px (y una miniatura de 400 px) y se vuelve a guardar como JPEG. Al redibujarla **se pierden los metadatos** (GPS, cámara). Unos 300–500 KB por foto: el plan gratuito de Supabase (1 GB) da para miles.
+- **Sin conexión primero, también con fotos:**
+  - la fila va por la sincronización normal; los archivos los guarda el móvil (tabla local `media_files`) y los sube `MediaSync` **antes** de subir las filas, para que otro móvil casi nunca vea una foto sin su archivo;
+  - en otro móvil, las fotos se descargan **solo cuando se miran** y se quedan guardadas;
+  - sin conexión, una foto que aún no está en el móvil sale como una nube tachada.
+- **Borrar es borrar:** la fila queda marcada como borrada (los demás móviles quitan su copia) y los archivos se eliminan de Storage en la siguiente sincronización (tabla local `media_removals`, que se reintenta). Sin "deshacer": se pide confirmación.
+- **Peso corporal:** al añadir o editar una foto se puede anotar el peso de ese día; se guarda en `body_metrics` (una entrada por día, que se actualiza). El comparador y la imagen muestran el cambio.
+- **Comparador:** por defecto, la última foto contra la primera de la misma postura (o la primera de todas). Dos modos: **deslizar** (la de antes encima, recortada en la línea; también con las flechas del teclado) y **lado a lado**. La más antigua siempre a la izquierda.
+- **Imagen de transformación:** las dos fotos a toda altura, una al lado de la otra, con "Antes / Después", las fechas, el tiempo que ha pasado y (si quieres) el cambio de peso. Se dibuja en el móvil con el generador de la 1.6.
+- Las fotos de progreso pueden considerarse **datos de salud**: por eso son privadas sin excepción y no hay nada que las publique dentro de la app (eso llegará, con consentimiento explícito, en la Fase 3).
+
 ### Infraestructura
 
 - **Supabase:** proyecto `forja` (región París, `eu-west-3`). Las migraciones se aplicaron con la integración de Supabase: el contenido es el mismo que en `supabase/migrations`, aunque la numeración de versiones en el servidor es distinta.
@@ -367,6 +384,10 @@ El diseño completo y el catálogo están en [`LOGROS.md`](LOGROS.md). Lo que se
 - **Nombre de usuario ocupado:** hoy aparece como "cambio no aceptado" en Perfil → Sincronización. Antes de abrir al público, comprobar la disponibilidad en directo.
 - **Pausa de Supabase gratuito** tras 7 días sin uso. Si molesta, se puede añadir un "ping" diario o pasar a Pro.
 - **Fase 3 (público):** ver [`docs/SOCIAL.md`](SOCIAL.md). Incluye dominio propio para el correo, plan Vercel Pro, RGPD, moderación y RLS de lectura pública según `visibility`.
+- **Fotos (1.9):**
+  - probar en un iPhone de verdad: hacer la foto con la cámara desde la app, fotos HEIC del carrete y fotos muy grandes;
+  - más adelante: guías de encuadre para repetir la misma postura, recortar o girar a mano, y una gráfica del peso corporal (los datos ya se guardan);
+  - si algún día se borra la cuenta, borrar también su carpeta de Storage (llega con "borrar mi cuenta", Fase 3).
 - **Progreso (1.8):**
   - las sesiones de ejemplo para estrenar las gráficas llegan con la 1.10;
   - más adelante: elegir qué ejercicios seguir de cerca, objetivos (la tabla `goals` ya existe) y la carga semanal comparada con la media de las 4 semanas anteriores.

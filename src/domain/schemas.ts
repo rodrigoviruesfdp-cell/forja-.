@@ -212,6 +212,25 @@ export const userAchievementSchema = z.object({
 });
 export type UserAchievement = z.infer<typeof userAchievementSchema>;
 
+export const MEDIA_KINDS = ["progress", "avatar", "post"] as const;
+export const POSES = ["front", "side", "back"] as const;
+export type Pose = (typeof POSES)[number];
+
+/** A photo the app keeps (progress photos for now). The file lives in Storage, in the owner's folder. */
+export const mediaSchema = z.object({
+  id,
+  user_id: id,
+  kind: z.enum(MEDIA_KINDS),
+  storage_path: z.string().min(1),
+  thumb_path: z.string().nullable(),
+  taken_at: isoDate,
+  pose: z.enum(POSES).nullable(),
+  width: z.number().int().positive().max(10000).nullable(),
+  height: z.number().int().positive().max(10000).nullable(),
+  ...softDeletable,
+});
+export type Media = z.infer<typeof mediaSchema>;
+
 export const bodyMetricSchema = z.object({
   id,
   user_id: id,

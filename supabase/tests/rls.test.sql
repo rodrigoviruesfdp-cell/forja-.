@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(41);
+select plan(48);
 
 -- Fixtures (as postgres, RLS bypassed) -----------------------------------------
 insert into auth.users (id, email, aud, role)
@@ -242,6 +242,37 @@ select throws_ok(
   'achievement keys are codes and levels start at 1'
 );
 
+-- Progress photos (1.9) ----------------------------------------------------------------
+select lives_ok(
+  $$ insert into public.media (id, kind, storage_path, thumb_path, taken_at, pose, width, height)
+     values ('aaaaaaaa-0000-0000-0000-0000000000b1', 'progress',
+             '11111111-1111-1111-1111-111111111111/progress/b1.jpg',
+             '11111111-1111-1111-1111-111111111111/progress/b1-thumb.jpg', current_date, 'front', 1200, 1600) $$,
+  'Ana can save a progress photo kept in her folder'
+);
+
+select throws_ok(
+  $$ insert into public.media (kind, storage_path, taken_at)
+     values ('progress', '22222222-2222-2222-2222-222222222222/progress/x.jpg', current_date) $$,
+  '23514',
+  null,
+  'a photo row can only point inside its owner''s folder'
+);
+
+select lives_ok(
+  $$ insert into storage.objects (bucket_id, name)
+     values ('media', '11111111-1111-1111-1111-111111111111/progress/b1.jpg') $$,
+  'Ana can upload a file to her own folder'
+);
+
+select throws_ok(
+  $$ insert into storage.objects (bucket_id, name)
+     values ('media', '22222222-2222-2222-2222-222222222222/progress/x.jpg') $$,
+  '42501',
+  null,
+  'Ana cannot upload to someone else''s folder'
+);
+
 -- Public identity (usernames) ----------------------------------------------------------
 select lives_ok(
   $$ update public.profiles set username = 'ana.lifts', bio = 'Hola'
@@ -301,6 +332,18 @@ select is(
   'Bob cannot see Ana''s achievements'
 );
 
+select is(
+  (select count(*)::int from public.media) + (select count(*)::int from storage.objects where bucket_id = 'media'),
+  0,
+  'Bob cannot see Ana''s photos or their files'
+);
+
+select is(
+  (select count(*)::int from storage.buckets where id = 'media' and public),
+  0,
+  'the photos bucket is private'
+);
+
 select throws_ok(
   $$ insert into public.user_achievements (achievement_key, tier, unlocked_at, session_id)
      values ('the_search', 1, now(), 'aaaaaaaa-0000-0000-0000-0000000000f2') $$,
@@ -318,6 +361,12 @@ select throws_ok(
   '42501',
   null,
   'anonymous users have no access at all'
+);
+
+select is(
+  (select count(*)::int from storage.objects where bucket_id = 'media'),
+  0,
+  'anonymous visitors cannot list photo files'
 );
 
 select * from finish();

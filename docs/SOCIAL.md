@@ -36,7 +36,7 @@ Todas las tablas llevarán RLS. Se crearán en la migración de cada entrega de 
 |---|---|---|
 | `follows` | `follower_id`, `followee_id`, `status` (`pending`/`accepted`), `created_at` | Clave `(follower_id, followee_id)`. Amigos = aceptado en las dos direcciones. |
 | `posts` | `id`, `user_id`, `type` (`session`/`routine`/`achievement`/`transformation`), `snapshot` (jsonb), `session_id`, `routine_id`, `audience` (`friends`), `created_at`, `deleted_at` | La copia de lo que publicas. Solo la ven tus amigos. |
-| `media` | `id`, `user_id`, `kind` (`progress`/`post`/`avatar`), `storage_path`, `taken_at`, `pose`, `width`, `height`, `post_id`, `deleted_at` | **Una sola tabla para todas las fotos.** Se crea en la 1.9 con las fotos de progreso; sustituye a la `session_media` prevista antes. |
+| `media` | `id`, `user_id`, `kind` (`progress`/`post`/`avatar`), `storage_path`, `thumb_path`, `taken_at`, `pose`, `width`, `height`, `deleted_at` (y `post_id` cuando lleguen las publicaciones) | **Una sola tabla para todas las fotos.** Creada en la 1.9 con las fotos de progreso, en un cubo privado con una carpeta por usuario; sustituye a la `session_media` prevista antes. |
 | `group_sessions` | `id`, `created_by`, `date`, `sport`, `place_name`, `duel_metric`, `duel_mode` (`fair`/`raw`), `status`, `winner_id`, `closed_at` | "Entrenar juntos" y el duelo del día. |
 | `group_session_members` | `group_id`, `user_id`, `session_id`, `status` (`invited`/`accepted`/`declined`), `summary` (jsonb), `score`, `disputed` | Cada uno comparte **solo su resumen**, nunca sus series. |
 | `kudos` | `post_id`, `user_id`, `created_at` | Un kudo por persona y publicación. |
